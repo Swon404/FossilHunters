@@ -1002,6 +1002,37 @@ body {
 .two-player-header { text-align: center; }
 .two-player-header h2 { font-size: 1.5rem; font-weight: 800; }
 
+/* Player config cards */
+.tp-player-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tp-player-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.diff-select-mini { display: flex; gap: 6px; flex-wrap: wrap; }
+.diff-mini-btn {
+  flex: 1; padding: 5px 4px; font-size: 0.72rem; font-weight: 700;
+  background: var(--bg-secondary); border: 2px solid transparent;
+  border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer;
+  transition: all 0.2s;
+}
+.diff-mini-btn.selected { border-color: var(--accent); color: var(--text-primary); background: rgba(233,69,96,0.15); }
+
+/* Round + champ config pickers */
+.rounds-select { display: flex; align-items: center; gap: 8px; justify-content: center; }
+.rounds-select label { color: var(--text-secondary); font-size: 0.9rem; }
+.round-btn {
+  padding: 7px 14px; background: var(--bg-card);
+  border: 2px solid transparent; border-radius: var(--radius-sm);
+  color: var(--text-primary); cursor: pointer; font-weight: 600; transition: all 0.2s;
+}
+.round-btn.selected { border-color: var(--accent); background: rgba(233,69,96,0.15); }
+.champ-config { display: flex; flex-direction: column; gap: 8px; }
+.champ-game-row { display: flex; align-items: center; gap: 10px; }
+.champ-game-label { min-width: 130px; font-size: 0.82rem; color: var(--text-secondary); text-align: right; }
+.champ-game-btns { display: flex; gap: 6px; }
+
 .tp-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .tp-mode-btn {
   display: flex;

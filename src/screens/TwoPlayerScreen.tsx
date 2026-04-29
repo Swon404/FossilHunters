@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { generateQuiz, generateSilhouetteQuiz, type Question } from '../engine/questionGenerator';
+import { DIFFICULTY_CONFIG, type Difficulty } from '../engine/scoring';
 import { getTwoPlayerNames, saveTwoPlayerNames } from '../engine/storage';
 import Chrono from '../components/Chrono';
 import { playCorrect, playWrong } from '../engine/sounds';
@@ -21,15 +22,17 @@ const MODE_INFO: Record<TwoPlayerMode, { label: string; icon: string; desc: stri
   'championship': { label: 'Championship', icon: '🏆',  desc: '4 rounds · 5 questions each · who\'s the Time Lord?' },
 };
 
-const CHAMP_ROUNDS        = 4;
-const CHAMP_Q_PER_ROUND   = 5; // 4 × 5 = 20 questions
-
 interface RoundRecord { round: number; p0: number; p1: number; }
+type PlayerConfig = { name: string; difficulty: Difficulty };
 
 export default function TwoPlayerScreen({ onBack }: Props) {
   const [phase, setPhase]         = useState<'setup' | 'playing' | 'round-break' | 'result'>('setup');
   const [mode, setMode]           = useState<TwoPlayerMode>('championship');
-  const [names, setNames]         = useState<[string, string]>(getTwoPlayerNames);
+  const [player1, setPlayer1] = useState<PlayerConfig>(() => ({ name: getTwoPlayerNames()[0], difficulty: 'explorer' }));
+  const [player2, setPlayer2] = useState<PlayerConfig>(() => ({ name: getTwoPlayerNames()[1], difficulty: 'scientist' }));
+  const [rounds, setRounds]       = useState(10);
+  const [champRoundsCount, setChampRoundsCount] = useState(4);
+  const [champQPerRound, setChampQPerRound]     = useState(5);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent]     = useState(0);
   const [scores, setScores]       = useState<[number, number]>([0, 0]);
@@ -41,16 +44,22 @@ export default function TwoPlayerScreen({ onBack }: Props) {
   const [roundStartScores, setRoundStartScores] = useState<[number, number]>([0, 0]);
 
   // Derived helpers
-  const champRound    = mode === 'championship' ? Math.floor(current / CHAMP_Q_PER_ROUND) + 1 : 1;
-  const champQInRound = mode === 'championship' ? (current % CHAMP_Q_PER_ROUND) + 1 : current + 1;
+  const champRound    = mode === 'championship' ? Math.floor(current / champQPerRound) + 1 : 1;
+  const champQInRound = mode === 'championship' ? (current % champQPerRound) + 1 : current + 1;
 
   function handleStartSetup() {
-    saveTwoPlayerNames(names);
-    const count = mode === 'championship' ? CHAMP_ROUNDS * CHAMP_Q_PER_ROUND : 10;
-    const qs = mode === 'silhouette'
-      ? generateSilhouetteQuiz('scientist', count)
-      : generateQuiz('scientist', count);
-    setQuestions(qs);
+    saveTwoPlayerNames([player1.name, player2.name]);
+    const count = mode === 'championship' ? champRoundsCount * champQPerRound : rounds;
+    const half1 = Math.ceil(count / 2);
+    const half2 = Math.floor(count / 2);
+    const gen = (d: Difficulty, n: number) =>
+      mode === 'silhouette' ? generateSilhouetteQuiz(d, n) : generateQuiz(d, n);
+    const p1qs = gen(player1.difficulty, half1);
+    const p2qs = gen(player2.difficulty, half2);
+    const merged: Question[] = [];
+    for (let i = 0; i < count; i++) {
+      merged.push(i % 2 === 0 ? p1qs[Math.floor(i / 2)] : p2qs[Math.floor(i / 2)]);
+    }
     setCurrent(0);
     setScores([0, 0]);
     setActivePlayer(0);
@@ -84,7 +93,7 @@ export default function TwoPlayerScreen({ onBack }: Props) {
   function handleNext() {
     const nextQ = current + 1;
 
-    if (mode === 'championship' && nextQ % CHAMP_Q_PER_ROUND === 0 && nextQ < questions.length) {
+    if (mode === 'championship' && nextQ % champQPerRound === 0 && nextQ < questions.length) {
       // End of a round (not the last question overall)
       setRoundRecords(prev => [...prev, {
         round: champRound,
@@ -143,25 +152,76 @@ export default function TwoPlayerScreen({ onBack }: Props) {
           ))}
         </div>
 
-        {/* Player names */}
-        <div style={{ display: 'flex', gap: 10 }}>
-          <input
-            className="profile-name-input"
-            placeholder="Player 1 name"
-            value={names[0]}
-            maxLength={15}
-            style={{ flex: 1 }}
-            onChange={e => setNames([e.target.value, names[1]])}
-          />
-          <input
-            className="profile-name-input"
-            placeholder="Player 2 name"
-            value={names[1]}
-            maxLength={15}
-            style={{ flex: 1 }}
-            onChange={e => setNames([names[0], e.target.value])}
-          />
+        {/* Player config cards */}
+        <div className="tp-player-cards">
+          {([
+            { p: player1, setP: (c: PlayerConfig) => setPlayer1(c), label: 'Player 1', color: '#64b5f6' },
+            { p: player2, setP: (c: PlayerConfig) => setPlayer2(c), label: 'Player 2', color: '#f06292' },
+          ]).map(({ p, setP, label, color }) => (
+            <div key={label} className="tp-player-card">
+              <h3 style={{ color, margin: '0 0 6px' }}>{label}</h3>
+              <input
+                className="profile-name-input"
+                placeholder={label}
+                value={p.name}
+                maxLength={15}
+                onChange={e => setP({ ...p, name: e.target.value })}
+              />
+              <div className="diff-select-mini">
+                {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(d => (
+                  <button
+                    key={d}
+                    className={`diff-mini-btn ${p.difficulty === d ? 'selected' : ''}`}
+                    onClick={() => setP({ ...p, difficulty: d })}
+                  >
+                    {DIFFICULTY_CONFIG[d].label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
+
+        {mode !== 'championship' && (
+          <div className="rounds-select">
+            <label>Rounds: </label>
+            {[5, 10, 15].map(r => (
+              <button
+                key={r}
+                className={`round-btn ${rounds === r ? 'selected' : ''}`}
+                onClick={() => setRounds(r)}
+              >{r}</button>
+            ))}
+          </div>
+        )}
+        {mode === 'championship' && (
+          <div className="champ-config">
+            <div className="champ-game-row">
+              <span className="champ-game-label">Rounds</span>
+              <div className="champ-game-btns">
+                {[3, 4, 6].map(n => (
+                  <button
+                    key={n}
+                    className={`round-btn ${champRoundsCount === n ? 'selected' : ''}`}
+                    onClick={() => setChampRoundsCount(n)}
+                  >{n}</button>
+                ))}
+              </div>
+            </div>
+            <div className="champ-game-row">
+              <span className="champ-game-label">Questions/round</span>
+              <div className="champ-game-btns">
+                {[3, 5, 8].map(n => (
+                  <button
+                    key={n}
+                    className={`round-btn ${champQPerRound === n ? 'selected' : ''}`}
+                    onClick={() => setChampQPerRound(n)}
+                  >{n}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         <button className="start-btn" onClick={handleStartSetup}>
           Let the battle begin! ⚔️
@@ -177,8 +237,8 @@ export default function TwoPlayerScreen({ onBack }: Props) {
     const p0wins    = roundRecords.filter(r => r.p0 > r.p1).length;
     const p1wins    = roundRecords.filter(r => r.p0 < r.p1).length;
     const roundWinner =
-      last.p0 > last.p1 ? (names[0] || 'Player 1') :
-      last.p1 > last.p0 ? (names[1] || 'Player 2') : null;
+      last.p0 > last.p1 ? (player1.name || 'Player 1') :
+      last.p1 > last.p0 ? (player2.name || 'Player 2') : null;
 
     return (
       <div className="quiz-result">
@@ -200,8 +260,8 @@ export default function TwoPlayerScreen({ onBack }: Props) {
             <thead>
               <tr style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
                 <th style={{ textAlign: 'left', paddingBottom: 6 }}>Round</th>
-                <th style={{ color: '#64b5f6' }}>{names[0] || 'P1'}</th>
-                <th style={{ color: '#f06292' }}>{names[1] || 'P2'}</th>
+                <th style={{ color: '#64b5f6' }}>{player1.name || 'P1'}</th>
+                <th style={{ color: '#f06292' }}>{player2.name || 'P2'}</th>
                 <th>Winner</th>
               </tr>
             </thead>
@@ -245,21 +305,21 @@ export default function TwoPlayerScreen({ onBack }: Props) {
 
   // ── Playing ──
   if (phase === 'playing' && q) {
-    const playerLabel = names[activePlayer] || `Player ${activePlayer + 1}`;
+    const playerLabel = (activePlayer === 0 ? player1.name : player2.name) || `Player ${activePlayer + 1}`;
     return (
       <div className="quiz-setup">
         {/* Score bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span className="tp-score-p1" style={{ fontWeight: 700 }}>
-            🔵 {names[0] || 'Player 1'}: {scores[0]}
+            🔵 {player1.name || 'Player 1'}: {scores[0]}
           </span>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
             {mode === 'championship'
-              ? `R${champRound}/${CHAMP_ROUNDS} · Q${champQInRound}/${CHAMP_Q_PER_ROUND}`
+              ? `R${champRound}/${champRoundsCount} · Q${champQInRound}/${champQPerRound}`
               : `${current + 1}/${questions.length}`}
           </span>
           <span className="tp-score-p2" style={{ fontWeight: 700 }}>
-            🔴 {names[1] || 'Player 2'}: {scores[1]}
+            🔴 {player2.name || 'Player 2'}: {scores[1]}
           </span>
         </div>
 
@@ -275,7 +335,7 @@ export default function TwoPlayerScreen({ onBack }: Props) {
             borderRadius: 'var(--radius)',
             padding: '4px 10px',
           }}>
-            🏆 CHAMPIONSHIP · ROUND {champRound} OF {CHAMP_ROUNDS}
+            🏆 CHAMPIONSHIP · ROUND {champRound} OF {champRoundsCount}
           </div>
         )}
 
@@ -317,7 +377,7 @@ export default function TwoPlayerScreen({ onBack }: Props) {
             <div className="quiz-explanation">{q.explanation}</div>
             <button className="start-btn" onClick={handleNext}>
               {current < questions.length - 1
-                ? (mode === 'championship' && champQInRound === CHAMP_Q_PER_ROUND ? `End of Round ${champRound} →` : 'Next →')
+                ? (mode === 'championship' && champQInRound === champQPerRound ? `End of Round ${champRound} →` : 'Next →')
                 : 'See results!'}
             </button>
           </>
@@ -332,11 +392,11 @@ export default function TwoPlayerScreen({ onBack }: Props) {
   const p1roundWins = isChamp ? roundRecords.filter(r => r.p0 < r.p1).length : 0;
   const winner =
     isChamp
-      ? p0roundWins > p1roundWins ? (names[0] || 'Player 1')
-        : p1roundWins > p0roundWins ? (names[1] || 'Player 2')
+      ? p0roundWins > p1roundWins ? (player1.name || 'Player 1')
+        : p1roundWins > p0roundWins ? (player2.name || 'Player 2')
         : null
-      : scores[0] > scores[1] ? (names[0] || 'Player 1')
-        : scores[1] > scores[0] ? (names[1] || 'Player 2')
+      : scores[0] > scores[1] ? (player1.name || 'Player 1')
+        : scores[1] > scores[0] ? (player2.name || 'Player 2')
         : null;
 
   return (
@@ -362,8 +422,8 @@ export default function TwoPlayerScreen({ onBack }: Props) {
             <thead>
               <tr style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
                 <th style={{ textAlign: 'left', paddingBottom: 6 }}>Round</th>
-                <th style={{ color: '#64b5f6' }}>{names[0] || 'P1'}</th>
-                <th style={{ color: '#f06292' }}>{names[1] || 'P2'}</th>
+                <th style={{ color: '#64b5f6' }}>{player1.name || 'P1'}</th>
+                <th style={{ color: '#f06292' }}>{player2.name || 'P2'}</th>
                 <th>Winner</th>
               </tr>
             </thead>
@@ -392,7 +452,7 @@ export default function TwoPlayerScreen({ onBack }: Props) {
           <div style={{ display: 'flex', justifyContent: 'space-around' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2.2rem', color: '#64b5f6', fontWeight: 800 }}>{p0roundWins}</div>
-              <div style={{ color: '#64b5f6', fontWeight: 700 }}>{names[0] || 'Player 1'}</div>
+              <div style={{ color: '#64b5f6', fontWeight: 700 }}>{player1.name || 'Player 1'}</div>
               {p0roundWins > p1roundWins && <div style={{ color: 'var(--gold)' }}>👑 Champion!</div>}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
@@ -400,7 +460,7 @@ export default function TwoPlayerScreen({ onBack }: Props) {
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2.2rem', color: '#f06292', fontWeight: 800 }}>{p1roundWins}</div>
-              <div style={{ color: '#f06292', fontWeight: 700 }}>{names[1] || 'Player 2'}</div>
+              <div style={{ color: '#f06292', fontWeight: 700 }}>{player2.name || 'Player 2'}</div>
               {p1roundWins > p0roundWins && <div style={{ color: 'var(--gold)' }}>👑 Champion!</div>}
             </div>
           </div>
@@ -417,13 +477,13 @@ export default function TwoPlayerScreen({ onBack }: Props) {
           <div style={{ display: 'flex', justifyContent: 'space-around', padding: '16px 0' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2.5rem', color: '#64b5f6', fontWeight: 800 }}>{scores[0]}</div>
-              <div style={{ color: '#64b5f6', fontWeight: 700 }}>{names[0] || 'Player 1'}</div>
+              <div style={{ color: '#64b5f6', fontWeight: 700 }}>{player1.name || 'Player 1'}</div>
               {scores[0] > scores[1] && <div style={{ color: 'var(--gold)' }}>👑 Winner!</div>}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', fontSize: '1.5rem' }}>VS</div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '2.5rem', color: '#f06292', fontWeight: 800 }}>{scores[1]}</div>
-              <div style={{ color: '#f06292', fontWeight: 700 }}>{names[1] || 'Player 2'}</div>
+              <div style={{ color: '#f06292', fontWeight: 700 }}>{player2.name || 'Player 2'}</div>
               {scores[1] > scores[0] && <div style={{ color: 'var(--gold)' }}>👑 Winner!</div>}
             </div>
           </div>
