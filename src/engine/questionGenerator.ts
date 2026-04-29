@@ -359,14 +359,22 @@ export function generateComparisonQuiz(difficulty: Difficulty, count: number): Q
 }
 
 /** For Memory Game – returns shuffled pairs of [emojiCard, nameCard] */
-export function getMemoryPairs(difficulty: Difficulty): Array<{ id: string; content: string; pairId: string }> {
+export function getMemoryPairs(
+  difficulty: Difficulty,
+  matchType: 'picture' | 'word',
+): Array<{ id: string; content: string; pairId: string; type: 'emoji' | 'text' }> {
   const pool = specimenPool(difficulty);
   const count = difficulty === 'explorer' ? 8 : difficulty === 'scientist' ? 12 : 16;
   const selected = shuffleArray(pool).slice(0, count);
-  const pairs: Array<{ id: string; content: string; pairId: string }> = [];
+  const pairs: Array<{ id: string; content: string; pairId: string; type: 'emoji' | 'text' }> = [];
   selected.forEach(s => {
-    pairs.push({ id: uniqueId(), content: s.emoji,  pairId: s.id });
-    pairs.push({ id: uniqueId(), content: s.name,   pairId: s.id });
+    if (matchType === 'picture') {
+      pairs.push({ id: uniqueId(), content: s.emoji, pairId: s.id, type: 'emoji' });
+      pairs.push({ id: uniqueId(), content: s.emoji, pairId: s.id, type: 'emoji' });
+    } else {
+      pairs.push({ id: uniqueId(), content: s.name, pairId: s.id, type: 'text' });
+      pairs.push({ id: uniqueId(), content: s.name, pairId: s.id, type: 'text' });
+    }
   });
   return shuffleArray(pairs);
 }

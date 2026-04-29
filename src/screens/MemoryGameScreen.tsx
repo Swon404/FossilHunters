@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { getMemoryPairs } from '../engine/questionGenerator';
 import { type Difficulty } from '../engine/scoring';
 import { type PlayerProfile } from '../engine/storage';
@@ -18,30 +18,17 @@ export default function MemoryGameScreen({ onComplete, onBack }: Omit<Props, 'pr
   const [flipped, setFlipped]     = useState<string[]>([]);
   const [matched, setMatched]     = useState<string[]>([]);   // pairIds
   const [moves, setMoves]         = useState(0);
-  const [startTime, setStartTime] = useState(0);
-  const [elapsed, setElapsed]     = useState(0);
-  const lockRef                   = useRef(false);
-  const timerRef                  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [matchMode, setMatchMode]  = useState<'picture' | 'word'>('picture');
+  const lockRef                    = useRef(false);
 
   function startGame() {
-    const pairs = getMemoryPairs(difficulty);
+    const pairs = getMemoryPairs(difficulty, matchMode);
     setCards(pairs);
     setFlipped([]);
     setMatched([]);
     setMoves(0);
-    const now = Date.now();
-    setStartTime(now);
-    setElapsed(0);
     setPhase('playing');
-
-    timerRef.current = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - now) / 1000));
-    }, 1000);
   }
-
-  useEffect(() => {
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, []);
 
   function handleCardClick(cardId: string) {
     if (lockRef.current) return;
@@ -68,9 +55,6 @@ export default function MemoryGameScreen({ onComplete, onBack }: Omit<Props, 'pr
 
         if (newMatched.length === cards.length / 2) {
           // All matched
-          clearInterval(timerRef.current!);
-          const finalElapsed = Math.floor((Date.now() - startTime) / 1000);
-          setElapsed(finalElapsed);
           setPhase('result');
         }
       } else {
@@ -100,10 +84,10 @@ export default function MemoryGameScreen({ onComplete, onBack }: Omit<Props, 'pr
     moves <= totalPairs + 2 ? 3
     : moves <= totalPairs * 2 ? 2
     : 1;
-  const score = starRating * 50 + Math.max(0, 120 - elapsed) * 2;
+  const score = starRating * 50;
 
-  // Grid columns: 4 for explorer, 5 for scientist, 6 for professor
-  const cols = difficulty === 'explorer' ? 4 : difficulty === 'scientist' ? 5 : 6;
+  // Fewer columns = bigger cards
+  const cols = difficulty === 'professor' ? 5 : 4;
 
   // ── Setup ──
   if (phase === 'setup') {
@@ -117,7 +101,7 @@ export default function MemoryGameScreen({ onComplete, onBack }: Omit<Props, 'pr
         <button className="back-btn" onClick={onBack}>← Back</button>
         <h1 className="setup-title">🧩 Memory Match</h1>
         <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-          Match the emoji to the name! Flip two cards at a time.
+          Flip two cards and find the matching pair!
         </p>
         <Chrono expression="thinking" message="How many pairs can you handle? 🧠" size={90} />
         <div className="difficulty-select">
@@ -129,6 +113,17 @@ export default function MemoryGameScreen({ onComplete, onBack }: Omit<Props, 'pr
             >
               <span className="diff-label">{d.label}</span>
               <span className="diff-desc">{d.pairs} pairs</span>
+            </button>
+          ))}
+        </div>
+        <div className="diff-select-mini" style={{ justifyContent: 'center', marginTop: 8 }}>
+          {(['picture', 'word'] as const).map(m => (
+            <button
+              key={m}
+              className={`diff-mini-btn ${matchMode === m ? 'selected' : ''}`}
+              onClick={() => setMatchMode(m)}
+            >
+              {m === 'picture' ? '🖼️ Pictures' : '🔤 Words'}
             </button>
           ))}
         </div>
@@ -144,7 +139,6 @@ export default function MemoryGameScreen({ onComplete, onBack }: Omit<Props, 'pr
         <div className="sp-memory-header">
           <button className="back-btn" onClick={onBack}>← Back</button>
           <span className="sp-memory-stat">Moves: {moves}</span>
-          <span className="sp-memory-stat">⏱ {elapsed}s</span>
           <span className="sp-memory-stat">✅ {matched.length}/{totalPairs}</span>
         </div>
 
@@ -161,9 +155,9 @@ export default function MemoryGameScreen({ onComplete, onBack }: Omit<Props, 'pr
               disabled={isMatched(card.id)}
             >
               {isFlipped(card.id) ? (
-                <span className="match-card-inner">{card.content}</span>
+                <span className={`match-card-inner${card.type === 'emoji' ? ' match-card-emoji' : ''}`}>{card.content}</span>
               ) : (
-                <span className="match-card-inner">🦕</span>
+                <span className="match-card-inner match-card-back">🪨</span>
               )}
             </button>
           ))}
@@ -198,10 +192,6 @@ export default function MemoryGameScreen({ onComplete, onBack }: Omit<Props, 'pr
           <div className="result-stat">
             <span className="stat-value">{moves}</span>
             <span className="stat-label">moves</span>
-          </div>
-          <div className="result-stat">
-            <span className="stat-value">{elapsed}s</span>
-            <span className="stat-label">time</span>
           </div>
         </div>
       </div>
