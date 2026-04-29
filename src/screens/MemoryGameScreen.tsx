@@ -87,7 +87,7 @@ export default function MemoryGameScreen({ onComplete, onBack }: Omit<Props, 'pr
   const score = starRating * 50;
 
   // Fewer columns = bigger cards
-  const cols = difficulty === 'professor' ? 5 : 4;
+  const cols = difficulty === 'explorer' ? 3 : difficulty === 'scientist' ? 4 : 5;
 
   // ── Setup ──
   if (phase === 'setup') {

@@ -649,7 +649,7 @@ body {
 .match-card.matched  { background: rgba(76,175,80,0.25); border-color: var(--correct); cursor: default; }
 .match-card:hover:not(.matched):not(.flipped) { transform: scale(1.04); }
 .match-card-inner      { font-size: 0.8rem; text-align: center; padding: 4px; word-break: break-word; line-height: 1.2; }
-.match-card-emoji      { font-size: 2rem; padding: 2px; }
+.match-card-emoji      { font-size: 3.2rem; padding: 2px; }
 .match-card-back       { font-size: 1.6rem; opacity: 0.4; }
 
 /* ===== Timeline Order ===== */
