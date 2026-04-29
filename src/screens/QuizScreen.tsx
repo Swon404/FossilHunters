@@ -125,12 +125,6 @@ export default function QuizScreen({ mode, onComplete, onBack }: Omit<Props, 'pr
 
   // ── Setup screen ────────────────────────────────────────────────
   if (phase === 'setup') {
-    const diffs: { key: Difficulty; label: string; desc: string }[] = [
-      { key: 'explorer',  label: '🟢 Explorer',  desc: `${cfg.choices} choices · ${DIFFICULTY_CONFIG.explorer.timerSeconds}s · second chance` },
-      { key: 'scientist', label: '🟡 Scientist',  desc: `${DIFFICULTY_CONFIG.scientist.choices} choices · ${DIFFICULTY_CONFIG.scientist.timerSeconds}s · second chance` },
-      { key: 'professor', label: '🔴 Professor',  desc: `${DIFFICULTY_CONFIG.professor.choices} choices · ${DIFFICULTY_CONFIG.professor.timerSeconds}s · no mercy!` },
-    ];
-
     return (
       <div className="quiz-setup">
         <button className="back-btn" onClick={onBack}>← Back</button>
@@ -140,16 +134,23 @@ export default function QuizScreen({ mode, onComplete, onBack }: Omit<Props, 'pr
         <Chrono expression="greeting" message="Pick your difficulty, brave explorer!" size={90} />
 
         <div className="difficulty-select">
-          {diffs.map(d => (
-            <button
-              key={d.key}
-              className={`diff-btn ${difficulty === d.key ? 'selected' : ''}`}
-              onClick={() => setDifficulty(d.key)}
-            >
-              <span className="diff-label">{d.label}</span>
-              <span className="diff-desc">{d.desc}</span>
-            </button>
-          ))}
+          {(Object.keys(DIFFICULTY_CONFIG) as Difficulty[]).map(d => {
+            const dcfg = DIFFICULTY_CONFIG[d];
+            return (
+              <button
+                key={d}
+                className={`diff-btn ${difficulty === d ? 'selected' : ''}`}
+                onClick={() => setDifficulty(d)}
+              >
+                <span className="diff-label">{dcfg.label}</span>
+                <span className="diff-desc">{dcfg.description}</span>
+                <span className="diff-detail">
+                  {dcfg.choices} choices · {dcfg.basePoints} EP base
+                  {dcfg.secondChance ? ' · 2nd chance!' : ''}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Deep Dive: pick a specimen */}

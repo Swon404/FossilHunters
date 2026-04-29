@@ -139,16 +139,7 @@ function makeDietQuestion(specimen: Specimen, _pool: Specimen[], choices: number
 }
 
 function makeFunFactQuestion(specimen: Specimen): Question {
-  const correct = 'TRUE — ' + specimen.funFact;
-  const fakeFacts = [
-    `FALSE — ${specimen.name} could actually fly at 200 km/h`,
-    `FALSE — ${specimen.name} was actually smaller than a house cat`,
-    `FALSE — ${specimen.name} could hold its breath for 3 hours`,
-    `FALSE — ${specimen.name} was actually bright pink`,
-    `FALSE — Scientists think ${specimen.name} could count to ten`,
-  ];
-  const distractors = shuffleArray(fakeFacts).slice(0, 3);
-  const { choices, correctIndex } = makeChoices(correct, distractors);
+  const { choices, correctIndex } = makeChoices('TRUE', ['FALSE']);
   return {
     id: uniqueId(),
     category: 'fun-fact',
@@ -268,9 +259,9 @@ function makeDiscoveryQuestion(specimen: Specimen, pool: Specimen[], choices: nu
 function makeTrueOrFalse(specimen: Specimen): Question {
   const fact = pickRandom(specimen.additionalFacts);
   const isTrue = Math.random() > 0.4;
-  const answer = isTrue ? 'TRUE ✅' : 'FALSE ❌';
+  const answer = isTrue ? 'TRUE' : 'FALSE';
   const text    = isTrue ? fact : `${specimen.name} was actually first discovered on the Moon`;
-  const { choices, correctIndex } = makeChoices(answer, [isTrue ? 'FALSE ❌' : 'TRUE ✅']);
+  const { choices, correctIndex } = makeChoices(answer, [isTrue ? 'FALSE' : 'TRUE']);
   return {
     id: uniqueId(),
     category: 'true-or-false',

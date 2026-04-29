@@ -3,6 +3,7 @@ import Chrono from '../components/Chrono';
 import { type PlayerProfile } from '../engine/storage';
 import { getRank, getNextRank, MILESTONES } from '../engine/scoring';
 import { type Screen } from '../App';
+import { speak, isTTSSupported, getAllVoices, getSavedVoiceName, saveVoiceName, getSavedRate, saveRate } from '../engine/tts';
 
 interface Props {
   profile: PlayerProfile;
@@ -72,6 +73,10 @@ export default function HomeScreen({ profile, onNavigate, onSwitchProfile }: Pro
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Quizzes: true });
   const [showMilestones, setShowMilestones] = useState(false);
   const [tipIndex] = useState(() => Math.floor(Math.random() * TIPS.length));
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [voices] = useState(() => getAllVoices());
+  const [selectedVoice, setSelectedVoice] = useState(() => getSavedVoiceName() ?? '');
+  const [rate, setRate] = useState(() => getSavedRate());
 
   const { progress } = profile;
   const rank         = getRank(progress.ep);
@@ -199,6 +204,43 @@ export default function HomeScreen({ profile, onNavigate, onSwitchProfile }: Pro
           </div>
         ))}
       </div>
-    </div>
+      {isTTSSupported() && (
+        <>
+          <button className="voice-settings-toggle" onClick={() => setShowVoiceSettings(v => !v)}>
+            ⚙️ Voice Settings
+          </button>
+          {showVoiceSettings && (
+            <div className="voice-settings-panel">
+              <h3>🔊 Voice Settings</h3>
+              {voices.length > 0 && (
+                <label className="voice-setting-label">
+                  Voice
+                  <select
+                    className="voice-select"
+                    value={selectedVoice}
+                    onChange={e => { saveVoiceName(e.target.value); setSelectedVoice(e.target.value); }}
+                  >
+                    {voices.map(v => (
+                      <option key={v.name} value={v.name}>{v.name}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <label className="voice-setting-label">
+                Speed: {rate.toFixed(1)}x
+                <input
+                  type="range" min="0.5" max="2.0" step="0.1" value={rate}
+                  onChange={e => { const r = parseFloat(e.target.value); setRate(r); saveRate(r); }}
+                  className="voice-range"
+                />
+              </label>
+              <button className="start-btn" style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}
+                onClick={() => speak("Hello! I am Chrono, your fossil hunting buddy! Let's dig up some history!")}>
+                🔊 Test Voice
+              </button>
+            </div>
+          )}
+        </>
+      )}    </div>
   );
 }
