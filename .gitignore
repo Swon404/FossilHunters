@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.vite/
+.env
+.env.local
+.env.*.local
+*.log
+npm-debug.log*
+*.tsbuildinfo
+dist/sw.js
+dist/workbox-*.js

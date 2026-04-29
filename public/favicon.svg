@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#2d1b3d"/>
+  <!-- Chrono robot silhouette -->
+  <rect x="22" y="14" width="20" height="16" rx="4" fill="#d97706"/>
+  <rect x="27" y="18" width="10" height="8" rx="2" fill="#1e1129"/>
+  <circle cx="32" cy="22" r="3" fill="#fbbf24" opacity="0.9"/>
+  <line x1="32" y1="14" x2="32" y2="10" stroke="#78909c" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="32" cy="9" r="2" fill="#fbbf24"/>
+  <rect x="18" y="30" width="28" height="20" rx="5" fill="#d97706"/>
+  <rect x="22" y="34" width="20" height="10" rx="3" fill="#1e1129" opacity="0.5"/>
+  <!-- Clock on chest -->
+  <circle cx="32" cy="39" r="4" fill="#1a237e" opacity="0.8"/>
+  <line x1="32" y1="39" x2="32" y2="36" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  <line x1="32" y1="39" x2="34" y2="40" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  <!-- Legs / boosters -->
+  <rect x="22" y="50" width="8" height="8" rx="3" fill="#b45309"/>
+  <rect x="34" y="50" width="8" height="8" rx="3" fill="#b45309"/>
+</svg>

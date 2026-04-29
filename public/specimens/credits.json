@@ -1,0 +1,37 @@
+[
+  {
+    "id": "eoraptor",
+    "title": "Eoraptor lunensis.jpg",
+    "artist": "No machine-readable author provided. Eamezaga assumed (based on copyright claims).",
+    "license": "Public domain",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Eoraptor_lunensis.jpg"
+  },
+  {
+    "id": "coelophysis",
+    "title": "Coelophysis bauri.jpg",
+    "artist": "Ryan Somma",
+    "license": "CC BY-SA 2.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Coelophysis_bauri.jpg"
+  },
+  {
+    "id": "allosaurus",
+    "title": "Allosaurus Revised.jpg",
+    "artist": "Fred Wierum",
+    "license": "CC BY-SA 4.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Allosaurus_Revised.jpg"
+  },
+  {
+    "id": "archaeopteryx",
+    "title": "Archaeopteryx lithographica (Berlin specimen).jpg",
+    "artist": "H. Raab (User: Vesta)",
+    "license": "CC BY-SA 3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Archaeopteryx_lithographica_(Berlin_specimen).jpg"
+  },
+  {
+    "id": "ichthyosaurus",
+    "title": "Ichthyosaurus BW.jpg",
+    "artist": "Nobu Tamura (http://spinops.blogspot.com)",
+    "license": "CC BY 3.0",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ichthyosaurus_BW.jpg"
+  }
+]
