@@ -37,6 +37,8 @@ export function getNextRank(ep: number): RankInfo | null {
 }
 
 export interface DifficultyConfig {
+  label: string;
+  description: string;
   choices: number;
   timerSeconds: number;
   secondChance: boolean;
@@ -47,6 +49,8 @@ export interface DifficultyConfig {
 
 export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
   explorer: {
+    label: 'Explorer',
+    description: 'For young fossil hunters — famous creatures, simpler questions, second chance!',
     choices: 3,
     timerSeconds: 30,
     secondChance: true,
@@ -55,6 +59,8 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
     streakMultiplier: 1.5,
   },
   scientist: {
+    label: 'Scientist',
+    description: 'For keen learners — more specimens, tougher questions, second chance!',
     choices: 4,
     timerSeconds: 20,
     secondChance: true,
@@ -63,6 +69,8 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
     streakMultiplier: 2,
   },
   professor: {
+    label: 'Professor',
+    description: 'For time lords only — all specimens, everything goes, no mercy!',
     choices: 5,
     timerSeconds: 15,
     secondChance: false,
