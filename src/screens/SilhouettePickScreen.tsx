@@ -5,6 +5,7 @@ import { type Difficulty } from '../engine/scoring';
 import { type PlayerProfile } from '../engine/storage';
 import Chrono from '../components/Chrono';
 import { playCorrect, playWrong } from '../engine/sounds';
+import { speak, isTTSSupported } from '../engine/tts';
 
 interface Props {
   profile: PlayerProfile | null;
@@ -113,7 +114,17 @@ export default function SilhouettePickScreen({ onComplete, onBack }: Omit<Props,
         </div>
 
         {!revealed && (
-          <p className="snap-buzzer-name">Identify this creature!</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <p className="snap-buzzer-name" style={{ margin: 0 }}>Identify this creature!</p>
+            {isTTSSupported() && (
+              <button
+                className="tts-btn tts-btn-small"
+                onClick={() => speak(`${q.choices.length} choices. Which creature is this?`)}
+                aria-label="Read question aloud"
+                title="Read aloud"
+              >🔊</button>
+            )}
+          </div>
         )}
         {revealed && (
           <p className="snap-buzzer-name" style={{ color: 'var(--accent-light)' }}>
@@ -139,7 +150,17 @@ export default function SilhouettePickScreen({ onComplete, onBack }: Omit<Props,
 
         {revealed && (
           <>
-            <div className="quiz-explanation">{q.explanation}</div>
+            <div className="quiz-explanation">
+              {q.explanation}
+              {isTTSSupported() && (
+                <button
+                  className="tts-btn tts-btn-small"
+                  onClick={() => speak(q.explanation)}
+                  aria-label="Read explanation aloud"
+                  title="Read explanation aloud"
+                >🔊</button>
+              )}
+            </div>
             <button className="start-btn snap-next-btn" onClick={handleNext}>
               {current < questions.length - 1 ? 'Next →' : 'Finish!'}
             </button>

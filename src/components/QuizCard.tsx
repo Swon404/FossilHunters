@@ -203,6 +203,16 @@ export default function QuizCard({
         <>
           <div className="quiz-explanation" role="status">
             {question.explanation}
+            {isTTSSupported() && (
+              <button
+                className="tts-btn tts-btn-small"
+                onClick={() => speak(question.explanation)}
+                aria-label="Read explanation aloud"
+                title="Read explanation aloud"
+              >
+                🔊
+              </button>
+            )}
           </div>
           <button className="start-btn next-btn" onClick={onNext}>
             {questionNumber < totalQuestions ? 'Next →' : 'Finish!'}
