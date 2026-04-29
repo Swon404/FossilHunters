@@ -60,6 +60,7 @@ export default function TwoPlayerScreen({ onBack }: Props) {
     for (let i = 0; i < count; i++) {
       merged.push(i % 2 === 0 ? p1qs[Math.floor(i / 2)] : p2qs[Math.floor(i / 2)]);
     }
+    setQuestions(merged);
     setCurrent(0);
     setScores([0, 0]);
     setActivePlayer(0);
