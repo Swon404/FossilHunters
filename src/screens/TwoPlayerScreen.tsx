@@ -18,12 +18,17 @@ const MODE_INFO: Record<TwoPlayerMode, { label: string; icon: string; desc: stri
   'quiz-battle':  { label: 'Quiz Battle',   icon: '⚔️',  desc: 'Take turns answering questions' },
   'tf-blitz':     { label: 'T/F Blitz',     icon: '⚡',  desc: 'True or False — buzz in first!' },
   'silhouette':   { label: 'Silhouette',    icon: '🔮',  desc: 'Identify the mystery creature' },
-  'championship': { label: 'Championship', icon: '🏆',  desc: 'Best of 20 — who\'s the Time Lord?' },
+  'championship': { label: 'Championship', icon: '🏆',  desc: '4 rounds · 5 questions each · who\'s the Time Lord?' },
 };
 
+const CHAMP_ROUNDS        = 4;
+const CHAMP_Q_PER_ROUND   = 5; // 4 × 5 = 20 questions
+
+interface RoundRecord { round: number; p0: number; p1: number; }
+
 export default function TwoPlayerScreen({ onBack }: Props) {
-  const [phase, setPhase]         = useState<'setup' | 'names' | 'playing' | 'result'>('setup');
-  const [mode, setMode]           = useState<TwoPlayerMode>('quiz-battle');
+  const [phase, setPhase]         = useState<'setup' | 'playing' | 'round-break' | 'result'>('setup');
+  const [mode, setMode]           = useState<TwoPlayerMode>('championship');
   const [names, setNames]         = useState<[string, string]>(getTwoPlayerNames);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent]     = useState(0);
@@ -31,10 +36,17 @@ export default function TwoPlayerScreen({ onBack }: Props) {
   const [activePlayer, setActivePlayer] = useState<0 | 1>(0);
   const [revealed, setRevealed]   = useState(false);
   const [selected, setSelected]   = useState<number | null>(null);
+  // Championship round tracking
+  const [roundRecords, setRoundRecords]         = useState<RoundRecord[]>([]);
+  const [roundStartScores, setRoundStartScores] = useState<[number, number]>([0, 0]);
+
+  // Derived helpers
+  const champRound    = mode === 'championship' ? Math.floor(current / CHAMP_Q_PER_ROUND) + 1 : 1;
+  const champQInRound = mode === 'championship' ? (current % CHAMP_Q_PER_ROUND) + 1 : current + 1;
 
   function handleStartSetup() {
     saveTwoPlayerNames(names);
-    const count = mode === 'championship' ? 20 : 10;
+    const count = mode === 'championship' ? CHAMP_ROUNDS * CHAMP_Q_PER_ROUND : 10;
     const qs = mode === 'silhouette'
       ? generateSilhouetteQuiz('scientist', count)
       : generateQuiz('scientist', count);
@@ -44,6 +56,8 @@ export default function TwoPlayerScreen({ onBack }: Props) {
     setActivePlayer(0);
     setRevealed(false);
     setSelected(null);
+    setRoundRecords([]);
+    setRoundStartScores([0, 0]);
     setPhase('playing');
   }
 
@@ -68,12 +82,35 @@ export default function TwoPlayerScreen({ onBack }: Props) {
   }
 
   function handleNext() {
-    if (current < questions.length - 1) {
-      setCurrent(c => c + 1);
+    const nextQ = current + 1;
+
+    if (mode === 'championship' && nextQ % CHAMP_Q_PER_ROUND === 0 && nextQ < questions.length) {
+      // End of a round (not the last question overall)
+      setRoundRecords(prev => [...prev, {
+        round: champRound,
+        p0: scores[0] - roundStartScores[0],
+        p1: scores[1] - roundStartScores[1],
+      }]);
+      setRoundStartScores(scores);
+      setCurrent(nextQ);
+      setActivePlayer(p => (p === 0 ? 1 : 0));
+      setRevealed(false);
+      setSelected(null);
+      setPhase('round-break');
+    } else if (nextQ < questions.length) {
+      setCurrent(nextQ);
       setActivePlayer(p => (p === 0 ? 1 : 0));
       setRevealed(false);
       setSelected(null);
     } else {
+      // Last question done
+      if (mode === 'championship') {
+        setRoundRecords(prev => [...prev, {
+          round: champRound,
+          p0: scores[0] - roundStartScores[0],
+          p1: scores[1] - roundStartScores[1],
+        }]);
+      }
       setPhase('result');
     }
   }
@@ -82,6 +119,7 @@ export default function TwoPlayerScreen({ onBack }: Props) {
 
   // ── Setup ──
   if (phase === 'setup') {
+
     return (
       <div className="two-player-screen">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -132,22 +170,114 @@ export default function TwoPlayerScreen({ onBack }: Props) {
     );
   }
 
+  // ── Championship Round Break ──
+  if (phase === 'round-break') {
+    const last      = roundRecords[roundRecords.length - 1];
+    const nextRound = (last?.round ?? 0) + 1;
+    const p0wins    = roundRecords.filter(r => r.p0 > r.p1).length;
+    const p1wins    = roundRecords.filter(r => r.p0 < r.p1).length;
+    const roundWinner =
+      last.p0 > last.p1 ? (names[0] || 'Player 1') :
+      last.p1 > last.p0 ? (names[1] || 'Player 2') : null;
+
+    return (
+      <div className="quiz-result">
+        <div style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 4 }}>
+          🏆 CHAMPIONSHIP
+        </div>
+        <h2 style={{ textAlign: 'center', fontSize: '1.5rem', marginBottom: 8 }}>
+          Round {last.round} Complete!
+        </h2>
+        <Chrono
+          expression={roundWinner ? 'celebrate' : 'greeting'}
+          size={90}
+          message={roundWinner ? `${roundWinner} wins Round ${last.round}! 🔥` : `Round ${last.round} — dead heat! 😮`}
+        />
+
+        {/* Round-by-round table */}
+        <div className="result-card" style={{ padding: '12px 16px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+            <thead>
+              <tr style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
+                <th style={{ textAlign: 'left', paddingBottom: 6 }}>Round</th>
+                <th style={{ color: '#64b5f6' }}>{names[0] || 'P1'}</th>
+                <th style={{ color: '#f06292' }}>{names[1] || 'P2'}</th>
+                <th>Winner</th>
+              </tr>
+            </thead>
+            <tbody>
+              {roundRecords.map(r => {
+                const rw = r.p0 > r.p1 ? '🔵' : r.p1 > r.p0 ? '🔴' : '🤝';
+                return (
+                  <tr key={r.round} style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <td style={{ padding: '5px 0', fontWeight: 600 }}>R{r.round}</td>
+                    <td style={{ textAlign: 'center', color: '#64b5f6', fontWeight: 700 }}>{r.p0}</td>
+                    <td style={{ textAlign: 'center', color: '#f06292', fontWeight: 700 }}>{r.p1}</td>
+                    <td style={{ textAlign: 'center' }}>{rw}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Championship standings */}
+        <div style={{ display: 'flex', justifyContent: 'space-around', padding: '8px 0' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', color: '#64b5f6', fontWeight: 800 }}>{p0wins}</div>
+            <div style={{ color: '#64b5f6', fontSize: '0.8rem' }}>Round wins</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            Round wins
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', color: '#f06292', fontWeight: 800 }}>{p1wins}</div>
+            <div style={{ color: '#f06292', fontSize: '0.8rem' }}>Round wins</div>
+          </div>
+        </div>
+
+        <button className="start-btn" onClick={() => setPhase('playing')}>
+          🏆 Round {nextRound} — Let's go!
+        </button>
+      </div>
+    );
+  }
+
   // ── Playing ──
   if (phase === 'playing' && q) {
     const playerLabel = names[activePlayer] || `Player ${activePlayer + 1}`;
     return (
       <div className="quiz-setup">
+        {/* Score bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span className="tp-score-p1" style={{ fontWeight: 700 }}>
             🔵 {names[0] || 'Player 1'}: {scores[0]}
           </span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            {current + 1}/{questions.length}
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+            {mode === 'championship'
+              ? `R${champRound}/${CHAMP_ROUNDS} · Q${champQInRound}/${CHAMP_Q_PER_ROUND}`
+              : `${current + 1}/${questions.length}`}
           </span>
           <span className="tp-score-p2" style={{ fontWeight: 700 }}>
             🔴 {names[1] || 'Player 2'}: {scores[1]}
           </span>
         </div>
+
+        {/* Championship round banner */}
+        {mode === 'championship' && (
+          <div style={{
+            textAlign: 'center',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            color: 'var(--gold)',
+            background: 'rgba(255,215,0,0.08)',
+            borderRadius: 'var(--radius)',
+            padding: '4px 10px',
+          }}>
+            🏆 CHAMPIONSHIP · ROUND {champRound} OF {CHAMP_ROUNDS}
+          </div>
+        )}
 
         <div style={{
           textAlign: 'center',
@@ -186,7 +316,9 @@ export default function TwoPlayerScreen({ onBack }: Props) {
           <>
             <div className="quiz-explanation">{q.explanation}</div>
             <button className="start-btn" onClick={handleNext}>
-              {current < questions.length - 1 ? 'Next →' : 'See results!'}
+              {current < questions.length - 1
+                ? (mode === 'championship' && champQInRound === CHAMP_Q_PER_ROUND ? `End of Round ${champRound} →` : 'Next →')
+                : 'See results!'}
             </button>
           </>
         )}
@@ -195,10 +327,17 @@ export default function TwoPlayerScreen({ onBack }: Props) {
   }
 
   // ── Result ──
+  const isChamp   = mode === 'championship' && roundRecords.length > 0;
+  const p0roundWins = isChamp ? roundRecords.filter(r => r.p0 > r.p1).length : 0;
+  const p1roundWins = isChamp ? roundRecords.filter(r => r.p0 < r.p1).length : 0;
   const winner =
-    scores[0] > scores[1] ? (names[0] || 'Player 1')
-    : scores[1] > scores[0] ? (names[1] || 'Player 2')
-    : null;
+    isChamp
+      ? p0roundWins > p1roundWins ? (names[0] || 'Player 1')
+        : p1roundWins > p0roundWins ? (names[1] || 'Player 2')
+        : null
+      : scores[0] > scores[1] ? (names[0] || 'Player 1')
+        : scores[1] > scores[0] ? (names[1] || 'Player 2')
+        : null;
 
   return (
     <div className="quiz-result">
@@ -208,31 +347,94 @@ export default function TwoPlayerScreen({ onBack }: Props) {
         className="chrono-wobble"
         message={
           winner
-            ? `${winner} wins! A true Time Lord! 🏆`
+            ? `${winner} is the Time Lord Champion! 🏆`
             : "It's a draw! You're both equally brilliant! 🤝"
         }
       />
-      <div className="result-card">
-        <h2>👥 Battle Complete!</h2>
-        <div style={{ display: 'flex', justifyContent: 'space-around', padding: '16px 0' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '2.5rem', color: '#64b5f6', fontWeight: 800 }}>{scores[0]}</div>
-            <div style={{ color: '#64b5f6', fontWeight: 700 }}>{names[0] || 'Player 1'}</div>
-            {scores[0] > scores[1] && <div style={{ color: 'var(--gold)' }}>👑 Winner!</div>}
+
+      {isChamp ? (
+        /* ── Championship result ── */
+        <div className="result-card">
+          <h2 style={{ textAlign: 'center', marginBottom: 12 }}>🏆 Championship Results</h2>
+
+          {/* Round-by-round breakdown */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: 14 }}>
+            <thead>
+              <tr style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
+                <th style={{ textAlign: 'left', paddingBottom: 6 }}>Round</th>
+                <th style={{ color: '#64b5f6' }}>{names[0] || 'P1'}</th>
+                <th style={{ color: '#f06292' }}>{names[1] || 'P2'}</th>
+                <th>Winner</th>
+              </tr>
+            </thead>
+            <tbody>
+              {roundRecords.map(r => {
+                const rw = r.p0 > r.p1 ? '🔵' : r.p1 > r.p0 ? '🔴' : '🤝';
+                return (
+                  <tr key={r.round} style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <td style={{ padding: '5px 0', fontWeight: 600 }}>Round {r.round}</td>
+                    <td style={{ textAlign: 'center', color: '#64b5f6', fontWeight: 700 }}>{r.p0}</td>
+                    <td style={{ textAlign: 'center', color: '#f06292', fontWeight: 700 }}>{r.p1}</td>
+                    <td style={{ textAlign: 'center' }}>{rw}</td>
+                  </tr>
+                );
+              })}
+              <tr style={{ borderTop: '2px solid rgba(255,255,255,0.15)', fontWeight: 800 }}>
+                <td style={{ padding: '7px 0' }}>TOTAL</td>
+                <td style={{ textAlign: 'center', color: '#64b5f6', fontSize: '1.1rem' }}>{scores[0]}</td>
+                <td style={{ textAlign: 'center', color: '#f06292', fontSize: '1.1rem' }}>{scores[1]}</td>
+                <td />
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Round wins summary */}
+          <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '2.2rem', color: '#64b5f6', fontWeight: 800 }}>{p0roundWins}</div>
+              <div style={{ color: '#64b5f6', fontWeight: 700 }}>{names[0] || 'Player 1'}</div>
+              {p0roundWins > p1roundWins && <div style={{ color: 'var(--gold)' }}>👑 Champion!</div>}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              rounds won
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '2.2rem', color: '#f06292', fontWeight: 800 }}>{p1roundWins}</div>
+              <div style={{ color: '#f06292', fontWeight: 700 }}>{names[1] || 'Player 2'}</div>
+              {p1roundWins > p0roundWins && <div style={{ color: 'var(--gold)' }}>👑 Champion!</div>}
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', fontSize: '1.5rem' }}>VS</div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '2.5rem', color: '#f06292', fontWeight: 800 }}>{scores[1]}</div>
-            <div style={{ color: '#f06292', fontWeight: 700 }}>{names[1] || 'Player 2'}</div>
-            {scores[1] > scores[0] && <div style={{ color: 'var(--gold)' }}>👑 Winner!</div>}
-          </div>
+          {!winner && (
+            <div style={{ textAlign: 'center', color: 'var(--accent-glow)', fontWeight: 700, marginTop: 8 }}>
+              🤝 It's a draw!
+            </div>
+          )}
         </div>
-        {!winner && (
-          <div style={{ textAlign: 'center', color: 'var(--accent-glow)', fontWeight: 700 }}>
-            🤝 It's a draw!
+      ) : (
+        /* ── Regular battle result ── */
+        <div className="result-card">
+          <h2>👥 Battle Complete!</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-around', padding: '16px 0' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '2.5rem', color: '#64b5f6', fontWeight: 800 }}>{scores[0]}</div>
+              <div style={{ color: '#64b5f6', fontWeight: 700 }}>{names[0] || 'Player 1'}</div>
+              {scores[0] > scores[1] && <div style={{ color: 'var(--gold)' }}>👑 Winner!</div>}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', fontSize: '1.5rem' }}>VS</div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '2.5rem', color: '#f06292', fontWeight: 800 }}>{scores[1]}</div>
+              <div style={{ color: '#f06292', fontWeight: 700 }}>{names[1] || 'Player 2'}</div>
+              {scores[1] > scores[0] && <div style={{ color: 'var(--gold)' }}>👑 Winner!</div>}
+            </div>
           </div>
-        )}
-      </div>
+          {!winner && (
+            <div style={{ textAlign: 'center', color: 'var(--accent-glow)', fontWeight: 700 }}>
+              🤝 It's a draw!
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="result-actions">
         <button className="start-btn" style={{ flex: 1 }} onClick={() => {
           setPhase('setup');
