@@ -171,43 +171,11 @@ export default function HomeScreen({ profile, onNavigate, onSwitchProfile }: Pro
         💡 {TIPS[tipIndex]}
       </div>
 
-      {/* Menu groups */}
-      <div className="home-menu">
-        {MENU_GROUPS.map(group => (
-          <div key={group.label} className="menu-group">
-            <button
-              className="menu-group-header"
-              onClick={() => toggleGroup(group.label)}
-              aria-expanded={!!openGroups[group.label]}
-            >
-              <span className="menu-group-icon">{group.icon}</span>
-              <span className="menu-group-label">{group.label}</span>
-              <span className={`menu-group-chevron ${openGroups[group.label] ? 'open' : ''}`}>▶</span>
-            </button>
-            {openGroups[group.label] && (
-              <div className="menu-group-items">
-                {group.items.map(item => (
-                  <button
-                    key={item.screen}
-                    className={`menu-btn ${item.primary ? 'primary' : ''}`}
-                    onClick={() => onNavigate(item.screen)}
-                  >
-                    <span className="menu-icon">{item.icon}</span>
-                    <span className="menu-label">
-                      {item.label}
-                      <span className="menu-desc">{item.desc}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      {/* Voice settings */}
       {isTTSSupported() && (
         <>
           <button className="voice-settings-toggle" onClick={() => setShowVoiceSettings(v => !v)}>
-            ⚙️ Voice Settings
+            🔊 Voice Settings {showVoiceSettings ? '▲' : '▼'}
           </button>
           {showVoiceSettings && (
             <div className="voice-settings-panel">
@@ -241,6 +209,41 @@ export default function HomeScreen({ profile, onNavigate, onSwitchProfile }: Pro
             </div>
           )}
         </>
-      )}    </div>
+      )}
+
+      {/* Menu groups */}
+      <div className="home-menu">
+        {MENU_GROUPS.map(group => (
+          <div key={group.label} className="menu-group">
+            <button
+              className="menu-group-header"
+              onClick={() => toggleGroup(group.label)}
+              aria-expanded={!!openGroups[group.label]}
+            >
+              <span className="menu-group-icon">{group.icon}</span>
+              <span className="menu-group-label">{group.label}</span>
+              <span className={`menu-group-chevron ${openGroups[group.label] ? 'open' : ''}`}>▶</span>
+            </button>
+            {openGroups[group.label] && (
+              <div className="menu-group-items">
+                {group.items.map(item => (
+                  <button
+                    key={item.screen}
+                    className={`menu-btn ${item.primary ? 'primary' : ''}`}
+                    onClick={() => onNavigate(item.screen)}
+                  >
+                    <span className="menu-icon">{item.icon}</span>
+                    <span className="menu-label">
+                      {item.label}
+                      <span className="menu-desc">{item.desc}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

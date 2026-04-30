@@ -6,6 +6,7 @@ import { type PlayerProfile } from '../engine/storage';
 import { type Specimen } from '../data/specimens';
 import Chrono from '../components/Chrono';
 import { playCorrect, playWrong } from '../engine/sounds';
+import { speak, isTTSSupported } from '../engine/tts';
 
 interface Props {
   profile: PlayerProfile | null;
@@ -111,8 +112,11 @@ export default function TimelineOrderScreen({ onComplete, onBack }: Omit<Props, 
           <span className="eo-score">{score} EP</span>
         </div>
 
-        <p className="eo-instruction">
-          Tap from <strong>oldest → most recent</strong>! ({placed.length}/{specimens.length} placed)
+        <p className="eo-instruction" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span>Tap from <strong>oldest → most recent</strong>! ({placed.length}/{specimens.length} placed)</span>
+          {isTTSSupported() && (
+            <button className="tts-btn tts-btn-small" onClick={() => speak(`Tap the specimens from oldest to most recent. You have placed ${placed.length} of ${specimens.length}.`)} aria-label="Read instruction aloud" title="Read aloud">🔊</button>
+          )}
         </p>
 
         {/* Placed row */}
@@ -129,6 +133,9 @@ export default function TimelineOrderScreen({ onComplete, onBack }: Omit<Props, 
                   <span className="eo-card-num" style={{ color: 'var(--text-secondary)' }}>
                     {formatYearsAgo(comparisonData[s.id]?.timelineYearsAgo ?? 0)}
                   </span>
+                  {isTTSSupported() && (
+                    <button className="tts-btn tts-btn-small" onClick={() => speak(`${s.name}, ${formatYearsAgo(comparisonData[s.id]?.timelineYearsAgo ?? 0)}`)} aria-label={`Read ${s.name} aloud`} title="Read aloud">🔊</button>
+                  )}
                 </div>
               ))}
             </div>

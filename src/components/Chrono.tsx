@@ -1,4 +1,5 @@
 import type React from 'react';
+import { speak, isTTSSupported } from '../engine/tts';
 
 type Expression = 'greeting' | 'thinking' | 'correct' | 'wrong' | 'hint' | 'celebrate';
 
@@ -190,6 +191,17 @@ export default function Chrono({ expression, message, className, size = 100 }: C
       {message && (
         <div className="chrono-message" role="status" aria-live="polite">
           {message}
+          {isTTSSupported() && (
+            <button
+              className="tts-btn tts-btn-small"
+              onClick={() => speak(message)}
+              aria-label="Read aloud"
+              title="Read aloud"
+              style={{ display: 'inline-block', marginLeft: 6, verticalAlign: 'middle' }}
+            >
+              🔊
+            </button>
+          )}
         </div>
       )}
     </div>

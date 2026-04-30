@@ -4,6 +4,7 @@ import { DIFFICULTY_CONFIG, type Difficulty } from '../engine/scoring';
 import { getTwoPlayerNames, saveTwoPlayerNames } from '../engine/storage';
 import Chrono from '../components/Chrono';
 import { playCorrect, playWrong } from '../engine/sounds';
+import { speak, isTTSSupported } from '../engine/tts';
 
 type TwoPlayerMode =
   | 'quiz-battle'
@@ -469,9 +470,15 @@ export default function TwoPlayerScreen({ onBack }: Props) {
 
         <div className="quiz-image">
           <div className="quiz-image-emoji">{q.specimen.emoji}</div>
+          <div className="quiz-image-name">{q.specimen.name}</div>
         </div>
 
-        <h2 style={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.4 }}>{q.text}</h2>
+        <div className="quiz-question">
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.4 }}>{q.text}</h2>
+          {isTTSSupported() && (
+            <button className="tts-btn" onClick={() => speak(q.text)} aria-label="Read question aloud" title="Read aloud">🔊</button>
+          )}
+        </div>
 
         <div className="snap-choices">
           {q.choices.map((choice, i) => {
@@ -491,7 +498,12 @@ export default function TwoPlayerScreen({ onBack }: Props) {
 
         {revealed && (
           <>
-            <div className="quiz-explanation">{q.explanation}</div>
+            <div className="quiz-explanation">
+              {q.explanation}
+              {isTTSSupported() && (
+                <button className="tts-btn tts-btn-small" onClick={() => speak(q.explanation)} aria-label="Read explanation aloud" title="Read explanation aloud">🔊</button>
+              )}
+            </div>
             <button className="start-btn" onClick={handleNext}>
               {current < questions.length - 1
                 ? (mode === 'championship' && champQInRound === champQPerRound ? `End of Round ${champRound} →` : 'Next →')
