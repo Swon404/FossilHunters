@@ -48,6 +48,8 @@ export interface CustomDino {
   name: string;
   bodyType: 'long-neck' | 'horned' | 'armoured' | 'bipedal';
   headStyle: 'flat' | 'crest' | 'horns' | 'beak';
+  tailStyle: 'short' | 'long' | 'spiked' | 'clubbed';
+  size: 'tiny' | 'medium' | 'giant';
   colour: string;
   diet: 'carnivore' | 'herbivore' | 'omnivore';
   createdAt: number;

@@ -907,12 +907,63 @@ body {
   border-radius: var(--radius-sm);
   padding: 12px;
 }
+.dino-gallery-svg   { flex-shrink: 0; }
 .dino-gallery-emoji { font-size: 2.5rem; }
 .dino-gallery-info  { flex: 1; }
 .dino-gallery-name  { font-weight: 700; font-size: 1rem; }
 .dino-gallery-desc  { font-size: 0.78rem; color: var(--text-secondary); }
 .dino-delete-btn    { background: none; border: none; font-size: 1.1rem; cursor: pointer; opacity: 0.5; }
 .dino-delete-btn:hover { opacity: 1; color: var(--wrong); }
+
+/* Part picker grid */
+.dino-part-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.dino-part-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  background: var(--bg-card);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.7rem;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.dino-part-btn.selected { background: rgba(233,69,96,0.18); border-color: var(--accent); }
+.dino-part-btn:hover:not(.selected) { background: var(--bg-secondary); }
+.dino-part-icon { font-size: 1.4rem; line-height: 1; }
+.dino-part-name { font-weight: 700; font-size: 0.72rem; }
+.dino-part-desc { font-size: 0.62rem; color: var(--text-secondary); }
+
+/* Colour swatch grid */
+.dino-colour-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.dino-colour-btn {
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  border: 3px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  transition: border-color 0.15s, transform 0.1s;
+}
+.dino-colour-btn.selected { border-color: #fff; transform: scale(1.12); }
+.dino-colour-tick { pointer-events: none; }
 
 /* ===== Exit confirm overlay ===== */
 .exit-confirm-overlay {
