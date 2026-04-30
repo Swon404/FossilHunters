@@ -81,7 +81,7 @@ export default function QuizCard({
       if (streak + 1 >= 3) playStreak().catch(() => { /* ignore */ });
       onAnswer(index, true, timeRemainingPct, isSecondAttempt);
     } else {
-      if (secondChance && !isSecondAttempt) {
+      if (secondChance && !isSecondAttempt && question.choices.length > 2) {
         setPhase('second-chance');
         setIsSecondAttempt(true);
         playWrong().catch(() => { /* ignore */ });
