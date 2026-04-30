@@ -152,12 +152,13 @@ export default function QuizCard({
         &nbsp;· Time: <strong style={{ color: timerColor }}>{timeLeft}s</strong>
       </div>
 
-      {/* Specimen image / emoji */}
+      {/* Specimen image / emoji + name */}
       <div className="quiz-image">
         {question.imageUrl
           ? <img src={question.imageUrl} alt={question.specimen.name} />
           : <div className="quiz-image-emoji">{question.specimen.emoji}</div>
         }
+        <div className="quiz-image-name">{question.specimen.name}</div>
       </div>
 
       {/* Question text + TTS */}
