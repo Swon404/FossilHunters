@@ -12,15 +12,15 @@ button:focus:not(:focus-visible) { outline: none; border-color: inherit; box-sha
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 :root {
-  /* Background palette — dusk amber-purple */
-  --bg-primary:   #2d1b3d;
-  --bg-secondary: #3d2a4f;
-  --bg-card:      #4a2f5e;
-  --bg-deep:      #1e1129;
+  /* Background palette — deep forest green */
+  --bg-primary:   #0d2b1a;
+  --bg-secondary: #163d27;
+  --bg-card:      #1e5035;
+  --bg-deep:      #081810;
 
   /* Text */
-  --text-primary:   #f0e8ff;
-  --text-secondary: #b39dcc;
+  --text-primary:   #e8f5e9;
+  --text-secondary: #81c784;
 
   /* Accent — amber / fossil-gold */
   --accent:      #d97706;
@@ -30,7 +30,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* Feedback colours */
   --correct: #4caf50;
   --wrong:   #ef5350;
-  --hint:    #ce93d8;
+  --hint:    #80cbc4;
   --gold:    #ffd700;
 
   /* Radius */
@@ -1095,6 +1095,7 @@ body {
 .champ-game-btns { display: flex; gap: 6px; }
 
 .tp-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tp-mode-btn.featured { grid-column: 1 / -1; }
 .tp-mode-btn {
   display: flex;
   flex-direction: column;

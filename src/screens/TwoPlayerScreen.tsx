@@ -196,10 +196,10 @@ export default function TwoPlayerScreen({ onBack }: Props) {
         <Chrono expression="greeting" message="Two time travellers? Chrono loves the company! 🤖" size={90} />
 
         <div className="tp-mode-grid">
-          {(Object.keys(MODE_INFO) as TwoPlayerMode[]).map(m => (
+          {(['championship', 'quiz-battle', 'tf-blitz', 'silhouette', 'memory-match'] as TwoPlayerMode[]).map(m => (
             <button
               key={m}
-              className={`tp-mode-btn ${mode === m ? 'selected' : ''}`}
+              className={`tp-mode-btn ${mode === m ? 'selected' : ''} ${m === 'championship' ? 'featured' : ''}`}
               onClick={() => setMode(m)}
             >
               <span className="tp-mode-icon">{MODE_INFO[m].icon}</span>
