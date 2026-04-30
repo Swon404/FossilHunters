@@ -469,8 +469,15 @@ export default function TwoPlayerScreen({ onBack }: Props) {
         </div>
 
         <div className="quiz-image">
-          <div className="quiz-image-emoji">{q.specimen.emoji}</div>
-          <div className="quiz-image-name">{q.specimen.name}</div>
+          <div
+            className="quiz-image-emoji"
+            style={mode === 'silhouette' && !revealed ? { filter: 'brightness(0)', transition: 'filter 0.4s ease' } : undefined}
+          >
+            {q.specimen.emoji}
+          </div>
+          {(mode !== 'silhouette' || revealed) && (
+            <div className="quiz-image-name">{q.specimen.name}</div>
+          )}
         </div>
 
         <div className="quiz-question">
