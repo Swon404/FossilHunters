@@ -69,11 +69,22 @@ export function saveRate(rate: number): void {
   localStorage.setItem(RATE_KEY, String(rate));
 }
 
+/** Strip emoji and variation selectors so TTS never tries to pronounce them */
+function stripEmoji(text: string): string {
+  return text
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')   // Misc symbols, pictographs, emoticons, transport, etc.
+    .replace(/[\u{2600}-\u{27BF}]/gu, '')       // Misc symbols, dingbats
+    .replace(/[\u{2B00}-\u{2BFF}]/gu, '')       // Misc symbols & arrows
+    .replace(/[\uFE00}-\uFE0F]/gu, '')           // Variation selectors
+    .replace(/\s{2,}/g, ' ')                     // Collapse double spaces left behind
+    .trim();
+}
+
 export function speak(text: string): void {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
 
-  const utterance = new SpeechSynthesisUtterance(text);
+  const utterance = new SpeechSynthesisUtterance(stripEmoji(text));
 
   if (!voicesLoaded) {
     window.speechSynthesis.onvoiceschanged = () => {
