@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { generateQuiz, generateSilhouetteQuiz, type Question } from '../engine/questionGenerator';
+import { useState, useRef } from 'react';
+import { generateQuiz, generateSilhouetteQuiz, getMemoryPairs, type Question } from '../engine/questionGenerator';
 import { DIFFICULTY_CONFIG, type Difficulty } from '../engine/scoring';
 import { getTwoPlayerNames, saveTwoPlayerNames } from '../engine/storage';
 import Chrono from '../components/Chrono';
@@ -9,7 +9,8 @@ type TwoPlayerMode =
   | 'quiz-battle'
   | 'tf-blitz'
   | 'silhouette'
-  | 'championship';
+  | 'championship'
+  | 'memory-match';
 
 interface Props {
   onBack: () => void;
@@ -20,6 +21,7 @@ const MODE_INFO: Record<TwoPlayerMode, { label: string; icon: string; desc: stri
   'tf-blitz':     { label: 'T/F Blitz',     icon: '⚡',  desc: 'True or False — buzz in first!' },
   'silhouette':   { label: 'Silhouette',    icon: '🔮',  desc: 'Identify the mystery creature' },
   'championship': { label: 'Championship', icon: '🏆',  desc: '4 rounds · 5 questions each · who\'s the Time Lord?' },
+  'memory-match': { label: 'Memory Match', icon: '🧩',  desc: 'Flip cards & steal pairs — match earns another turn!' },
 };
 
 interface RoundRecord { round: number; p0: number; p1: number; }
@@ -42,6 +44,12 @@ export default function TwoPlayerScreen({ onBack }: Props) {
   // Championship round tracking
   const [roundRecords, setRoundRecords]         = useState<RoundRecord[]>([]);
   const [roundStartScores, setRoundStartScores] = useState<[number, number]>([0, 0]);
+  // Memory Match state
+  const memLockRef = useRef(false);
+  const [memCards, setMemCards]         = useState<ReturnType<typeof getMemoryPairs>>([]);
+  const [memFlipped, setMemFlipped]     = useState<string[]>([]);
+  const [memMatched, setMemMatched]     = useState<string[]>([]);
+  const [memMatchMode, setMemMatchMode] = useState<'picture' | 'word'>('picture');
 
   // Derived helpers
   const champRound    = mode === 'championship' ? Math.floor(current / champQPerRound) + 1 : 1;
@@ -49,6 +57,16 @@ export default function TwoPlayerScreen({ onBack }: Props) {
 
   function handleStartSetup() {
     saveTwoPlayerNames([player1.name, player2.name]);
+    if (mode === 'memory-match') {
+      const pairs = getMemoryPairs(player1.difficulty, memMatchMode);
+      setMemCards(pairs);
+      setMemFlipped([]);
+      setMemMatched([]);
+      setScores([0, 0]);
+      setActivePlayer(0);
+      setPhase('playing');
+      return;
+    }
     const count = mode === 'championship' ? champRoundsCount * champQPerRound : rounds;
     const half1 = Math.ceil(count / 2);
     const half2 = Math.floor(count / 2);
@@ -125,6 +143,43 @@ export default function TwoPlayerScreen({ onBack }: Props) {
     }
   }
 
+  function handleMemCardClick(cardId: string) {
+    if (memLockRef.current) return;
+    if (memFlipped.includes(cardId)) return;
+    const card = memCards.find(c => c.id === cardId);
+    if (!card || memMatched.includes(card.pairId)) return;
+
+    const newFlipped = [...memFlipped, cardId];
+    setMemFlipped(newFlipped);
+
+    if (newFlipped.length === 2) {
+      const [idA, idB] = newFlipped;
+      const cardA = memCards.find(c => c.id === idA)!;
+      const cardB = memCards.find(c => c.id === idB)!;
+      if (cardA.pairId === cardB.pairId) {
+        playCorrect().catch(() => { /* ignore */ });
+        const newMatched = [...memMatched, cardA.pairId];
+        setMemMatched(newMatched);
+        setMemFlipped([]);
+        setScores(prev => {
+          const next: [number, number] = [...prev] as [number, number];
+          next[activePlayer] += 1;
+          return next;
+        });
+        if (newMatched.length === memCards.length / 2) setPhase('result');
+        // match → same player goes again
+      } else {
+        playWrong().catch(() => { /* ignore */ });
+        memLockRef.current = true;
+        setTimeout(() => {
+          setMemFlipped([]);
+          memLockRef.current = false;
+          setActivePlayer(p => (p === 0 ? 1 : 0));
+        }, 900);
+      }
+    }
+  }
+
   const q = questions[current];
 
   // ── Setup ──
@@ -183,7 +238,21 @@ export default function TwoPlayerScreen({ onBack }: Props) {
           ))}
         </div>
 
-        {mode !== 'championship' && (
+        {mode === 'memory-match' && (
+          <div className="diff-select-mini" style={{ justifyContent: 'center' }}>
+            {(['picture', 'word'] as const).map(m => (
+              <button
+                key={m}
+                className={`diff-mini-btn ${memMatchMode === m ? 'selected' : ''}`}
+                onClick={() => setMemMatchMode(m)}
+              >
+                {m === 'picture' ? '🖼️ Pictures' : '🔤 Words'}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {mode !== 'championship' && mode !== 'memory-match' && (
           <div className="rounds-select">
             <label>Rounds: </label>
             {[5, 10, 15].map(r => (
@@ -300,6 +369,53 @@ export default function TwoPlayerScreen({ onBack }: Props) {
         <button className="start-btn" onClick={() => setPhase('playing')}>
           🏆 Round {nextRound} — Let's go!
         </button>
+      </div>
+    );
+  }
+
+  // ── Memory-Match Playing ──
+  if (phase === 'playing' && mode === 'memory-match') {
+    const playerLabel = (activePlayer === 0 ? player1.name : player2.name) || `Player ${activePlayer + 1}`;
+    const totalPairs = memCards.length / 2;
+    const cols = player1.difficulty === 'explorer' ? 3 : player1.difficulty === 'scientist' ? 4 : 5;
+    return (
+      <div className="quiz-setup">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span className="tp-score-p1" style={{ fontWeight: 700 }}>🔵 {player1.name || 'P1'}: {scores[0]}</span>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>✅ {memMatched.length}/{totalPairs}</span>
+          <span className="tp-score-p2" style={{ fontWeight: 700 }}>🔴 {player2.name || 'P2'}: {scores[1]}</span>
+        </div>
+        <div style={{
+          textAlign: 'center',
+          background: activePlayer === 0 ? 'rgba(100,181,246,0.15)' : 'rgba(240,98,146,0.15)',
+          borderRadius: 'var(--radius)',
+          padding: '8px',
+          fontWeight: 700,
+          color: activePlayer === 0 ? '#64b5f6' : '#f06292',
+        }}>
+          {activePlayer === 0 ? '🔵' : '🔴'} {playerLabel}'s turn — match earns another go!
+        </div>
+        <div className="match-grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+          {memCards.map(card => {
+            const isFlipped = memFlipped.includes(card.id) || memMatched.includes(card.pairId);
+            const isMatched = memMatched.includes(card.pairId);
+            return (
+              <button
+                key={card.id}
+                className={`match-card ${isFlipped ? 'flipped' : ''} ${isMatched ? 'matched' : ''}`}
+                onClick={() => handleMemCardClick(card.id)}
+                aria-label={isFlipped ? card.content : 'Hidden card'}
+                disabled={isMatched}
+              >
+                {isFlipped ? (
+                  <span className={`match-card-inner${card.type === 'emoji' ? ' match-card-emoji' : ''}`}>{card.content}</span>
+                ) : (
+                  <span className="match-card-inner match-card-back">🪨</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     );
   }

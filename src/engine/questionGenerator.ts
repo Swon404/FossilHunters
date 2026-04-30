@@ -363,7 +363,16 @@ export function getMemoryPairs(
   difficulty: Difficulty,
   matchType: 'picture' | 'word',
 ): Array<{ id: string; content: string; pairId: string; type: 'emoji' | 'text' }> {
-  const pool = specimenPool(difficulty);
+  let pool = specimenPool(difficulty);
+  // In picture mode, deduplicate by emoji so no two different specimens look identical
+  if (matchType === 'picture') {
+    const seen = new Set<string>();
+    pool = pool.filter(s => {
+      if (seen.has(s.emoji)) return false;
+      seen.add(s.emoji);
+      return true;
+    });
+  }
   const count = difficulty === 'explorer' ? 8 : difficulty === 'scientist' ? 12 : 16;
   const selected = shuffleArray(pool).slice(0, count);
   const pairs: Array<{ id: string; content: string; pairId: string; type: 'emoji' | 'text' }> = [];
