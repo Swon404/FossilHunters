@@ -228,18 +228,21 @@ function makeDangerQuestion(specimen: Specimen, choices: number): Question | nul
   const data = comparisonData[specimen.id];
   if (!data) return null;
   const level   = data.dangerLevel;
-  const correct = DANGER_LABELS[level] ?? String(level);
-  const otherLabels = Object.values(DANGER_LABELS).filter(l => l !== correct);
-  const distractors = shuffleArray(otherLabels).slice(0, choices - 1);
+  const labelFor = (n: number) => `${n}/10 — ${DANGER_LABELS[n] ?? String(n)}`;
+  const correct  = labelFor(level);
+  const otherLevels = Object.keys(DANGER_LABELS)
+    .map(Number)
+    .filter(n => n !== level);
+  const distractors = shuffleArray(otherLevels).slice(0, choices - 1).map(labelFor);
   const { choices: ch, correctIndex } = makeChoices(correct, distractors);
   return {
     id: uniqueId(),
     category: 'danger-level',
     specimen,
-    text: `How dangerous was the ${specimen.name}? (rated 1–10)`,
+    text: `How dangerous was the ${specimen.name}?`,
     choices: ch,
     correctIndex,
-    explanation: `${specimen.name} scores ${level}/10 on the danger scale — ${correct}. ${specimen.funny ?? ''}`,
+    explanation: `${specimen.name} scores ${level}/10 on the danger scale — ${DANGER_LABELS[level]}. ${specimen.funny ?? ''}`,
   };
 }
 
