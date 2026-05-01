@@ -176,26 +176,28 @@ function makeFunFactQuestion(specimen: Specimen): Question {
   };
 }
 
-function makeSizeComparison(specimenA: Specimen, specimenB: Specimen, choices: number): Question | null {
+function makeSizeComparison(specimenA: Specimen, specimenB: Specimen, choices: number, pool: Specimen[]): Question | null {
   const dataA = comparisonData[specimenA.id];
   const dataB = comparisonData[specimenB.id];
   if (!dataA || !dataB || !dataA.lengthMetres || !dataB.lengthMetres) return null;
   if (dataA.lengthMetres === dataB.lengthMetres) return null;
 
-  const biggerOne = dataA.lengthMetres > dataB.lengthMetres ? specimenA : specimenB;
-  const correct   = biggerOne.name;
-  const wrong     = biggerOne.id === specimenA.id ? specimenB.name : specimenA.name;
-  const extra     = ['A blue whale (33 m)', 'A school bus (12 m)', 'A golden retriever (0.6 m)'];
-  const distractors = [wrong, ...shuffleArray(extra).slice(0, choices - 2)];
-  const { choices: ch, correctIndex } = makeChoices(correct, distractors);
+  const biggerOne  = dataA.lengthMetres > dataB.lengthMetres ? specimenA : specimenB;
+  const smallerOne = biggerOne.id === specimenA.id ? specimenB : specimenA;
+  const correct    = biggerOne.name;
+  // Always include the other compared specimen; fill remaining slots with other pool specimens that have a length
+  const otherPool  = pool.filter(s => s.id !== specimenA.id && s.id !== specimenB.id && comparisonData[s.id]?.lengthMetres);
+  const extras     = shuffleArray(otherPool).slice(0, Math.max(0, choices - 2)).map(s => s.name);
+  const finalDistractors = [smallerOne.name, ...extras].slice(0, choices - 1);
+  const { choices: ch, correctIndex } = makeChoices(correct, finalDistractors);
   return {
     id: uniqueId(),
     category: 'size-comparison',
     specimen: specimenA,
-    text: `Which was longer: ${specimenA.name} (${formatLength(dataA.lengthMetres)}) or ${specimenB.name} (${formatLength(dataB.lengthMetres)})?`,
+    text: `Which was longer: ${specimenA.name} or ${specimenB.name}?`,
     choices: ch,
     correctIndex,
-    explanation: `${biggerOne.name} was ${formatLength(comparisonData[biggerOne.id].lengthMetres!)} long, making it the bigger beast!`,
+    explanation: `${biggerOne.name} was ${formatLength(comparisonData[biggerOne.id].lengthMetres!)} long — ${smallerOne.name} was only ${formatLength(comparisonData[smallerOne.id].lengthMetres!)}!`,
   };
 }
 
@@ -393,7 +395,7 @@ export function generateComparisonQuiz(difficulty: Difficulty, count: number): Q
     const b = shuffled[i + 1];
     const fn = pickRandom([
       () => makeWhichIsOlder(a, b, cfgChoices),
-      () => makeSizeComparison(a, b, cfgChoices),
+      () => makeSizeComparison(a, b, cfgChoices, pool),
       () => makeDangerQuestion(a, cfgChoices),
     ]);
     const q = fn();
