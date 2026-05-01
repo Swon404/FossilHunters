@@ -33,6 +33,49 @@ export const comparisonData: Record<string, ComparisonAttributes> = {
   'cave-bear':           { timelineYearsAgo: 100_000,     lengthMetres: 3.5,  weightKg: 800,    dangerLevel: 7  },
   'neanderthal':         { timelineYearsAgo: 150_000,     lengthMetres: 1.75, weightKg: 80,     dangerLevel: 6  },
   'woolly-rhino':        { timelineYearsAgo: 250_000,     lengthMetres: 3.8,  weightKg: 2500,   dangerLevel: 7  },
+
+  // Paleolithic
+  'hand-axe':            { timelineYearsAgo: 500_000,     lengthMetres: null, weightKg: null,   dangerLevel: 3  },
+  'fire-control':        { timelineYearsAgo: 400_000,     lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'flint-blade':         { timelineYearsAgo: 100_000,     lengthMetres: null, weightKg: null,   dangerLevel: 3  },
+  'cave-painting':       { timelineYearsAgo: 40_000,      lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'bone-flute':          { timelineYearsAgo: 35_000,      lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'cheddar-man':         { timelineYearsAgo: 10_000,      lengthMetres: 1.65, weightKg: 65,     dangerLevel: 4  },
+
+  // Mesolithic
+  'microlith':           { timelineYearsAgo: 8_000,       lengthMetres: null, weightKg: null,   dangerLevel: 2  },
+  'red-deer-antler':     { timelineYearsAgo: 9_000,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+
+  // Neolithic
+  'dolmen':              { timelineYearsAgo: 5_500,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'skara-brae':          { timelineYearsAgo: 5_000,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'pottery':             { timelineYearsAgo: 5_000,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'otzi':                { timelineYearsAgo: 5_300,       lengthMetres: 1.6,  weightKg: 50,     dangerLevel: 5  },
+  'stonehenge':          { timelineYearsAgo: 4_500,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'stone-circle':        { timelineYearsAgo: 4_000,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'polished-stone-axe':  { timelineYearsAgo: 4_000,       lengthMetres: null, weightKg: null,   dangerLevel: 2  },
+
+  // Bronze Age
+  'beaker':              { timelineYearsAgo: 4_500,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'amesbury-archer':     { timelineYearsAgo: 4_300,       lengthMetres: 1.70, weightKg: 70,     dangerLevel: 5  },
+  'mold-gold-cape':      { timelineYearsAgo: 3_700,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'bronze-age-axe':      { timelineYearsAgo: 3_800,       lengthMetres: null, weightKg: null,   dangerLevel: 4  },
+  'bronze-sword':        { timelineYearsAgo: 3_000,       lengthMetres: null, weightKg: null,   dangerLevel: 6  },
+  'chariot':             { timelineYearsAgo: 2_000,       lengthMetres: null, weightKg: null,   dangerLevel: 5  },
+
+  // Iron Age
+  'celtic-torc':         { timelineYearsAgo: 2_300,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'iron-sword':          { timelineYearsAgo: 2_400,       lengthMetres: null, weightKg: null,   dangerLevel: 7  },
+  'hillfort':            { timelineYearsAgo: 2_500,       lengthMetres: null, weightKg: null,   dangerLevel: 3  },
+  'iron-age-roundhouse': { timelineYearsAgo: 2_500,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'iron-plough':         { timelineYearsAgo: 2_000,       lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'boudicca':            { timelineYearsAgo: 1_960,       lengthMetres: 1.70, weightKg: 70,     dangerLevel: 9  },
+
+  // Fossil types
+  'trace-fossil':        { timelineYearsAgo: 100_000_000, lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'amber':               { timelineYearsAgo: 99_000_000,  lengthMetres: null, weightKg: null,   dangerLevel: 1  },
+  'ammonite':            { timelineYearsAgo: 180_000_000, lengthMetres: 1.8,  weightKg: null,   dangerLevel: 1  },
+  'trilobite':           { timelineYearsAgo: 450_000_000, lengthMetres: 0.1,  weightKg: null,   dangerLevel: 1  },
 };
 
 export const DANGER_LABELS: Record<number, string> = {

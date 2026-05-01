@@ -61,17 +61,42 @@ function specimenPool(difficulty: Difficulty): Specimen[] {
        'woolly-mammoth', 'sabre-tooth', 'diplodocus', 'pterodactyl',
        'ankylosaurus', 'spinosaurus', 'allosaurus', 'archaeopteryx',
        'pteranodon', 'mosasaurus', 'iguanodon',
-       'stonehenge', 'cave-painting', 'hand-axe'].includes(s.id)
+       // Stone/Bronze/Iron age and human development
+       'stonehenge', 'cave-painting', 'hand-axe', 'flint-blade',
+       'neanderthal', 'cheddar-man', 'woolly-rhino', 'cave-bear',
+       'skara-brae', 'pottery', 'bronze-sword', 'boudicca',
+       'otzi', 'fire-control', 'dolmen', 'bone-flute',
+       // Fossils
+       'ammonite', 'trilobite',
+      ].includes(s.id)
     );
   }
   if (cfg.specimenPool === 'creatures') {
-    return specimens.filter(s => s.kind !== 'artifact' && s.kind !== 'fossil-type');
+    // Include dinosaurs, prehistoric animals, humans AND artifacts — everything except pure fossil-type
+    return specimens.filter(s => s.kind !== 'fossil-type');
   }
   return specimens;
 }
 
 function uniqueId(): string {
   return Math.random().toString(36).slice(2, 9);
+}
+
+/** Reorder questions so no two consecutive questions share the same category */
+function spreadByCategory(questions: Question[]): Question[] {
+  const result: Question[] = [];
+  const remaining = [...questions];
+  while (remaining.length > 0) {
+    const lastCategory = result.length > 0 ? result[result.length - 1].category : null;
+    const idx = remaining.findIndex(q => q.category !== lastCategory);
+    if (idx === -1) {
+      // All remaining have the same category — just append them
+      result.push(...remaining.splice(0));
+    } else {
+      result.push(...remaining.splice(idx, 1));
+    }
+  }
+  return result;
 }
 
 // ── Individual question generators ──────────────────────────────
@@ -256,11 +281,30 @@ function makeDiscoveryQuestion(specimen: Specimen, pool: Specimen[], choices: nu
   };
 }
 
+// Pool of varied funny false statements — one is picked at random for each T/F question
+const FALSE_STATEMENTS: Array<(name: string) => string> = [
+  name => `${name} was first discovered on the Moon`,
+  name => `${name} was once kept as a pet by Roman emperors`,
+  name => `Scientists believe ${name} could breathe fire`,
+  name => `${name} is actually named after Queen Victoria`,
+  name => `${name} was briefly kept in London Zoo in the Victorian era`,
+  name => `${name} could regenerate lost limbs like a starfish`,
+  name => `${name} was originally thought to be a type of giant mushroom`,
+  name => `${name} is the official symbol of Brazil`,
+  name => `${name} appears in the background of the Mona Lisa painting`,
+  name => `${name} was used as currency in ancient Rome`,
+  name => `${name} could travel faster than a modern racing car`,
+  name => `Scientists once thought ${name} could speak a form of ancient language`,
+  name => `${name} was discovered by accident inside a birthday cake in 1897`,
+  name => `${name} is actually related to the modern garden snail`,
+];
+
 function makeTrueOrFalse(specimen: Specimen): Question {
   const fact = pickRandom(specimen.additionalFacts);
   const isTrue = Math.random() > 0.4;
   const answer = isTrue ? 'TRUE' : 'FALSE';
-  const text    = isTrue ? fact : `${specimen.name} was actually first discovered on the Moon`;
+  const falseFn = pickRandom(FALSE_STATEMENTS);
+  const text    = isTrue ? fact : falseFn(specimen.name);
   const { choices, correctIndex } = makeChoices(answer, [isTrue ? 'FALSE' : 'TRUE']);
   return {
     id: uniqueId(),
@@ -271,7 +315,7 @@ function makeTrueOrFalse(specimen: Specimen): Question {
     correctIndex,
     explanation: isTrue
       ? `That's true! ${pickRandom(specimen.additionalFacts)}`
-      : `Ha! ${specimen.name} was definitely NOT discovered on the Moon. ${fact}`,
+      : `Ha! That's completely made up! ${fact}`,
   };
 }
 
@@ -313,7 +357,7 @@ export function generateQuiz(difficulty: Difficulty, count: number): Question[] 
     usedIds.add(specimen.id);
   }
 
-  return shuffleArray(questions).slice(0, count);
+  return spreadByCategory(shuffleArray(questions)).slice(0, count);
 }
 
 export function generateDeepDiveQuiz(specimenId: string, difficulty: Difficulty, count: number): Question[] {
