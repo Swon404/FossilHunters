@@ -3,6 +3,7 @@ import Chrono from './Chrono';
 import { type Question } from '../engine/questionGenerator';
 import { playCorrect, playWrong, playStreak, playTick } from '../engine/sounds';
 import { speak, isTTSSupported } from '../engine/tts';
+import { resolveWikimediaUrl } from '../engine/wikimedia';
 
 interface Props {
   question: Question;
@@ -33,8 +34,21 @@ export default function QuizCard({
   const [phase, setPhase]             = useState<Phase>('answering');
   const [timeLeft, setTimeLeft]       = useState(timerSeconds);
   const [isSecondAttempt, setIsSecondAttempt] = useState(false);
+  const [resolvedImageUrl, setResolvedImageUrl] = useState<string | null>(null);
   const timerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTime = useRef(Date.now());
+
+  // Fetch Wikimedia thumbnail when specimen changes
+  useEffect(() => {
+    setResolvedImageUrl(null);
+    const title = question.specimen.wikimediaTitle;
+    if (!title) return;
+    let cancelled = false;
+    resolveWikimediaUrl(title).then(url => {
+      if (!cancelled) setResolvedImageUrl(url);
+    });
+    return () => { cancelled = true; };
+  }, [question.specimen.id]);
 
   useEffect(() => {
     setSelected(null);
@@ -154,8 +168,12 @@ export default function QuizCard({
 
       {/* Specimen image / emoji + name */}
       <div className="quiz-image">
-        {question.imageUrl
-          ? <img src={question.imageUrl} alt={question.specimen.name} />
+        {(question.imageUrl || resolvedImageUrl)
+          ? <img
+              src={question.imageUrl ?? resolvedImageUrl!}
+              alt={question.specimen.name}
+              className="quiz-specimen-photo"
+            />
           : <div className="quiz-image-emoji">{question.specimen.emoji}</div>
         }
         <div className="quiz-image-name">{question.specimen.name}</div>

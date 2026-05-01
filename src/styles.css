@@ -529,6 +529,14 @@ body {
   object-fit: contain;
   border-radius: var(--radius-sm);
 }
+.quiz-specimen-photo {
+  max-height: 180px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  background: #0a1f12;
+}
 .quiz-image-emoji {
   font-size: 5rem;
   line-height: 1.1;

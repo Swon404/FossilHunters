@@ -372,7 +372,7 @@ export const specimens: Specimen[] = [
     kind: 'dinosaur',
     eraId: 'cretaceous',
     timelineYearsAgo: 75_000_000,
-    emoji: '🦖',
+    emoji: '�',
     wikimediaTitle: 'Velociraptor Restoration.png',
     funFact: 'Movie raptors are totally wrong — real Velociraptors were only the size of a turkey and covered in feathers!',
     additionalFacts: [
@@ -424,7 +424,7 @@ export const specimens: Specimen[] = [
     kind: 'dinosaur',
     eraId: 'cretaceous',
     timelineYearsAgo: 67_000_000,
-    emoji: '🦕',
+    emoji: '🐢',
     wikimediaTitle: 'Ankylosaurus.jpg',
     funFact: 'A living tank with a tail club heavy enough to shatter T. rex\'s leg bones!',
     additionalFacts: [
@@ -476,7 +476,7 @@ export const specimens: Specimen[] = [
     kind: 'flying-reptile',
     eraId: 'cretaceous',
     timelineYearsAgo: 86_000_000,
-    emoji: '🦅',
+    emoji: '�',
     wikimediaTitle: 'Pteranodon NT.jpg',
     funFact: 'A flying reptile with a 7-metre wingspan — bigger than a king-size bed turned sideways!',
     additionalFacts: [
@@ -502,7 +502,7 @@ export const specimens: Specimen[] = [
     kind: 'marine-reptile',
     eraId: 'cretaceous',
     timelineYearsAgo: 70_000_000,
-    emoji: '🐉',
+    emoji: '�',
     wikimediaTitle: 'Mosasaurus hoffmanii.jpg',
     funFact: 'The ultimate sea monster — an 18-metre swimming lizard that ruled the Cretaceous oceans.',
     additionalFacts: [
@@ -528,7 +528,7 @@ export const specimens: Specimen[] = [
     kind: 'dinosaur',
     eraId: 'cretaceous',
     timelineYearsAgo: 70_000_000,
-    emoji: '🦕',
+    emoji: '🐏',
     wikimediaTitle: 'Pachycephalosaurus NT.jpg',
     funFact: 'Its skull was 25 cm of solid bone — it headbutted rivals like a prehistoric crash helmet on legs!',
     additionalFacts: [
@@ -641,7 +641,7 @@ export const specimens: Specimen[] = [
     kind: 'prehistoric-animal',
     eraId: 'ice-age',
     timelineYearsAgo: 200_000,
-    emoji: '🐆',
+    emoji: '�',
     wikimediaTitle: 'Smilodon fatalis.jpg',
     funFact: 'Those fangs were up to 28 cm long — longer than your entire hand!',
     additionalFacts: [
@@ -844,7 +844,7 @@ export const specimens: Specimen[] = [
     kind: 'artifact',
     eraId: 'mesolithic',
     timelineYearsAgo: 8_000,
-    emoji: '🗡️',
+    emoji: '🪨',
     funFact: 'Tiny blade fragments glued into slots — like fitting USB drives into a stone-age computer!',
     additionalFacts: [
       'Microliths are tiny stone blades, usually less than 4 cm long, set into handles to make composite tools.',
@@ -894,7 +894,7 @@ export const specimens: Specimen[] = [
     kind: 'artifact',
     eraId: 'neolithic',
     timelineYearsAgo: 4_500,
-    emoji: '🪨',
+    emoji: '🏛️',
     wikimediaTitle: 'Stonehenge2007 07 30.jpg',
     funFact: 'The bluestones of Stonehenge were dragged 250 km from Wales — with no wheels, no horses, and pure determination.',
     additionalFacts: [
@@ -1029,7 +1029,7 @@ export const specimens: Specimen[] = [
     kind: 'artifact',
     eraId: 'bronze-age',
     timelineYearsAgo: 4_500,
-    emoji: '🏺',
+    emoji: '🫖',
     wikimediaTitle: 'Bell Beaker vessel from Ciempozuelos.jpg',
     funFact: 'Decorated pottery pots found across Europe — they seem to have spread with a mass migration of Bronze Age people from the steppes!',
     additionalFacts: [
@@ -1051,7 +1051,7 @@ export const specimens: Specimen[] = [
     kind: 'artifact',
     eraId: 'bronze-age',
     timelineYearsAgo: 2_000,
-    emoji: '🛞',
+    emoji: '�',
     funFact: 'The wheel and the chariot transformed Bronze Age warfare and travel — and Britain\'s chariot warriors were still fighting Romans 1,000 years later!',
     additionalFacts: [
       'The wheel was invented in Mesopotamia around 3500 BC — revolutionising transport and warfare.',
@@ -1123,7 +1123,7 @@ export const specimens: Specimen[] = [
     kind: 'artifact',
     eraId: 'iron-age',
     timelineYearsAgo: 2_300,
-    emoji: '💛',
+    emoji: '�',
     wikimediaTitle: 'Torc MHNT PRE 2009.0.201.1.jpg',
     funFact: 'A twisted gold neck-ring worn by Celtic warriors and queens — the ancient world\'s most impressive statement necklace.',
     additionalFacts: [
