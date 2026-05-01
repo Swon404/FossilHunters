@@ -35,7 +35,7 @@ export default function TwoPlayerScreen({ onBack }: Props) {
   const [player2, setPlayer2] = useState<PlayerConfig>(() => ({ name: getTwoPlayerNames()[1], difficulty: 'scientist' }));
   const [rounds, setRounds]       = useState(10);
   const [champRoundsCount, setChampRoundsCount] = useState(4);
-  const [champQPerRound, setChampQPerRound]     = useState(5);
+  const [champQPerRound, setChampQPerRound]     = useState(4);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [current, setCurrent]     = useState(0);
   const [scores, setScores]       = useState<[number, number]>([0, 0]);
@@ -280,9 +280,9 @@ export default function TwoPlayerScreen({ onBack }: Props) {
               </div>
             </div>
             <div className="champ-game-row">
-              <span className="champ-game-label">Questions/round</span>
+              <span className="champ-game-label">Questions/round (each)</span>
               <div className="champ-game-btns">
-                {[3, 5, 8].map(n => (
+                {[4, 6, 8].map(n => (
                   <button
                     key={n}
                     className={`round-btn ${champQPerRound === n ? 'selected' : ''}`}
