@@ -9,6 +9,7 @@ import {
 } from '../engine/questionGenerator';
 import { DIFFICULTY_CONFIG, calculatePoints, type Difficulty } from '../engine/scoring';
 import { specimens } from '../data/specimens';
+import { ERAS } from '../data/eras';
 import { type PlayerProfile } from '../engine/storage';
 import { type QuizCompleteData } from '../App';
 import { type Screen } from '../App';
@@ -163,24 +164,27 @@ export default function QuizScreen({ mode, onComplete, onBack }: Omit<Props, 'pr
             >
               🎲 Random surprise!
             </button>
-            <div className="dd-specimen-grid">
-              {specimens.slice(0, 30).map(s => (
-                <button
-                  key={s.id}
-                  className={`dd-specimen-cell ${selectedSpecimen === s.id ? 'selected' : ''}`}
-                  style={{ background: selectedSpecimen === s.id ? 'var(--accent)' : 'var(--bg-card)' }}
-                  onClick={() => setSelectedSpecimen(s.id)}
-                  title={s.name}
-                >
-                  {s.emoji}
-                </button>
-              ))}
-            </div>
-            {selectedSpecimen && (
-              <p className="dd-selected-name">
-                {specimens.find(s => s.id === selectedSpecimen)?.name}
-              </p>
-            )}
+            {ERAS.map(era => {
+              const eraSpecimens = specimens.filter(s => s.eraId === era.id);
+              if (eraSpecimens.length === 0) return null;
+              return (
+                <div key={era.id} className="dd-era-group">
+                  <div className="dd-era-label">{era.emoji} {era.name}</div>
+                  <div className="dd-specimen-grid">
+                    {eraSpecimens.map(s => (
+                      <button
+                        key={s.id}
+                        className={`dd-specimen-cell ${selectedSpecimen === s.id ? 'selected' : ''}`}
+                        onClick={() => setSelectedSpecimen(s.id)}
+                      >
+                        <span className="dd-cell-emoji">{s.emoji}</span>
+                        <span className="dd-cell-name">{s.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 

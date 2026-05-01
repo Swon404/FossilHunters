@@ -1037,7 +1037,7 @@ body {
 .voice-range { width: 100%; accent-color: var(--accent); }
 
 /* ===== Deep Dive Picker ===== */
-.deep-dive-picker { display: flex; flex-direction: column; gap: 10px; }
+.deep-dive-picker { display: flex; flex-direction: column; gap: 12px; }
 .deep-dive-picker h3 { font-size: 1rem; font-weight: 700; }
 .dd-random-btn {
   padding: 10px 14px;
@@ -1050,21 +1050,44 @@ body {
   transition: border-color 0.2s;
 }
 .dd-random-btn.selected { border-color: var(--accent-glow); }
-.dd-specimen-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+
+.dd-era-group { display: flex; flex-direction: column; gap: 6px; }
+.dd-era-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--bg-card);
+}
+
+.dd-specimen-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .dd-specimen-cell {
-  aspect-ratio: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
-  border-radius: 6px;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: 8px;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: transform 0.1s, border-color 0.15s;
+  background: var(--bg-card);
+  transition: transform 0.1s, border-color 0.15s, background 0.15s;
+  min-height: 72px;
 }
-.dd-specimen-cell:hover   { transform: scale(1.1); }
-.dd-specimen-cell.selected { border-color: white; }
-.dd-selected-name { font-size: 0.85rem; color: var(--accent-light); text-align: center; }
+.dd-specimen-cell:hover   { transform: scale(1.04); background: var(--bg-secondary); }
+.dd-specimen-cell.selected { border-color: var(--accent-glow); background: var(--bg-secondary); }
+.dd-cell-emoji { font-size: 1.8rem; line-height: 1; }
+.dd-cell-name {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
 
 /* ===== Two-Player ===== */
 .two-player-screen { display: flex; flex-direction: column; gap: 16px; padding-bottom: 32px; }
