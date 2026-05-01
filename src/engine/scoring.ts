@@ -49,7 +49,7 @@ export interface DifficultyConfig {
 
 export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
   explorer: {
-    label: 'Explorer',
+    label: 'Apprentice',
     description: 'For young fossil hunters — famous creatures, simpler questions, second chance!',
     choices: 3,
     timerSeconds: 30,
@@ -59,7 +59,7 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
     streakMultiplier: 1.5,
   },
   scientist: {
-    label: 'Scientist',
+    label: 'Excavator',
     description: 'For keen learners — more specimens, tougher questions, second chance!',
     choices: 4,
     timerSeconds: 20,
@@ -69,7 +69,7 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
     streakMultiplier: 2,
   },
   professor: {
-    label: 'Professor',
+    label: 'Palaeontologist',
     description: 'For time lords only — all specimens, everything goes, no mercy!',
     choices: 5,
     timerSeconds: 15,
