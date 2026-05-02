@@ -117,10 +117,10 @@ function makeNameFromEra(specimen: Specimen, pool: Specimen[], choices: number):
     id: uniqueId(),
     category: 'name-from-era',
     specimen,
-    text: `Which of these lived during the ${eraName}?`,
+    text: `Which of these is from the ${eraName}?`,
     choices: ch,
     correctIndex,
-    explanation: `${specimen.name} lived during the ${eraName} — ${specimen.funFact}`,
+    explanation: `${specimen.name} is from the ${eraName} — ${specimen.funFact}`,
   };
 }
 
@@ -135,7 +135,7 @@ function makeWhichEra(specimen: Specimen, choices: number): Question {
     text: `Which era did the ${specimen.name} come from?`,
     choices: ch,
     correctIndex,
-    explanation: `The ${specimen.name} lived during the ${correctEra.name} (around ${formatYearsAgo(specimen.timelineYearsAgo)}).`,
+    explanation: `The ${specimen.name} is from the ${correctEra.name} (around ${formatYearsAgo(specimen.timelineYearsAgo)}).`,
   };
 }
 
@@ -220,7 +220,7 @@ function makeWhichIsOlder(specimenA: Specimen, specimenB: Specimen, choices: num
     text: `Which came first: ${specimenA.name} or ${specimenB.name}?`,
     choices: ch,
     correctIndex,
-    explanation: `${olderOne.name} lived ${formatYearsAgo(comparisonData[olderOne.id].timelineYearsAgo)}, making it older.`,
+    explanation: `${olderOne.name} dates to ${formatYearsAgo(comparisonData[olderOne.id].timelineYearsAgo)}, making it older.`,
   };
 }
 
@@ -457,7 +457,7 @@ export function generateSilhouetteQuiz(difficulty: Difficulty, count: number): Q
       id: uniqueId(),
       category: 'silhouette-match' as QuestionCategory,
       specimen,
-      text: `🔮 Which creature is this? (shown as silhouette)`,
+      text: `🔮 Which specimen is this? (shown as silhouette)`,
       choices,
       correctIndex,
       explanation: `That's ${specimen.name}! ${specimen.funFact}`,
